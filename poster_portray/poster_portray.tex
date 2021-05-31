@@ -1,5 +1,5 @@
 % Copyright 2015
-% 
+%
 % Authors
 % -------
 %   - Emile Contal			emile.contal@cmla.ens-cachan.fr
@@ -99,7 +99,7 @@
         \item Optimization of Energy Networks
         \end{itemize}
 
-\vskip1em	
+\vskip1em
 
 {\hspace{0.1em}\bf Derivative-free Optimization} \mycite{\cite{cite101}}\\
         Let $f^{\star}:\X\to\R$ where $\X\subset\R^d$ is a closed set
@@ -120,7 +120,7 @@
 	\item Confirm the performance empirically
 	\item Provide theoretical guarantees
 	\end{itemize}
-	 
+
 
 {\hspace{1em}\bf }\\
 {\hspace{1em}\bf }\\
@@ -134,8 +134,8 @@
 \item The unkown function has reasonable variations
 \end{itemize}
 
-          %Since $h_{0}^{\star}(x)= \indic{x \in \arg\max_{x \in \X}f(x)}$, 
-          
+          %Since $h_{0}^{\star}(x)= \indic{x \in \arg\max_{x \in \X}f(x)}$,
+
 \end{column}
 	\end{columns}
 \vskip\botBlock
@@ -152,7 +152,7 @@
 {\hspace{0.34em}}
     \begin{column}{\ColWd}%\ColWd
       \begin{block}{2. Controlling the Smoothness}
-	
+
 	%{\hspace{0.1em}\bf Binary classification for level sets estimation}\\
 	%Given a dataset $\D_n$, we have acces to $n+1$ classification datasets: $\D_n^{j}=\{(x_i, \indic{f(x_i) \geq f(x_{(j)})} \}_{i \leq n}$ where $(j)$ stands for the index of the $j^{\textrm{th}}$ smallest value of $\{ f(x_i)\}_{i \leq n}$. Noting $er_{\D^i_n}=\sum_{i \leq n} \indic{h(x_i) \neq y_i}$, we define a set of candidates for the level $i$,
 	%$$
@@ -172,15 +172,15 @@
 	    \includegraphics[width=100mm, height=57mm]{placeholder} & ~~~~~~~~~~~& \includegraphics[width=100mm, height=57mm]{placeholder} ~~~~
 	  \end{array}$
 	\end{center}
-      \caption{Upper and lower bounds for  lipschizian functions (left) and gaussian RKHS (right)} 
+      \caption{Upper and lower bounds for  lipschizian functions (left) and gaussian RKHS (right)}
        \end{figure}
 \vskip\botBlock
 \end{block}
-\sepblock 
-      
+\sepblock
+
 
 \begin{block}{3. Concepts of Active Learning}
-	
+
 {\hspace{0.1em}\bf Active learning for binary classification} \mycite{\cite{cite201}}\\
 Let $h^{\star}\in \H$ and $\H_n=\{h \in \H: \sum_{i=1}^n \indic{h(X_i) \neq h^{\star}(X_i)}=0 \}$
 \begin{itemize}
@@ -194,10 +194,10 @@ Let $h^{\star}\in \H$ and $\H_n=\{h \in \H: \sum_{i=1}^n \indic{h(X_i) \neq h^{\
 \begin{figure}[h]
 \begin{center}$
 \begin{array}{cccccc}
-\includegraphics[page=1, width=80mm]{placeholder}& ~~~~~~~ & \includegraphics[page=2, width=80mm]{placeholder} & ~~~~~~~ & \includegraphics[page=3, width=80mm]{placeholder} 
+\includegraphics[page=1, width=80mm]{placeholder}& ~~~~~~~ & \includegraphics[page=2, width=80mm]{placeholder} & ~~~~~~~ & \includegraphics[page=3, width=80mm]{placeholder}
 \end{array}$
 \end{center}
-\caption{Computation of the disagreement area for linear classifiers} 
+\caption{Computation of the disagreement area for linear classifiers}
 \end{figure}
 \vskip\botBlock
 \end{block}
@@ -206,7 +206,7 @@ Let $h^{\star}\in \H$ and $\H_n=\{h \in \H: \sum_{i=1}^n \indic{h(X_i) \neq h^{\
 
 
 \begin{block}{4. Estimating the Maximum with Active Learning}
-	
+
 {\hspace{0.1em}\bf Set of candidates} \\
 Given a set of mpoints $\{(X_i, f^{\star}(X_i))\}_{i \leq n}$ and a functional space $\F$, we define the set of functions that are still consistent with the datas:
 $$
@@ -235,19 +235,19 @@ $ x \in \textsc{ArgMax}(\F_n) $~i.f.f.~$ \min_{i \leq n} f^{\star}(X_i)+ k \norm
     \begin{column}{\ColWd}
       \begin{alertblock}{}%Title
       \end{alertblock}
-      
-      
-      
-      
-      
-      
-  
+
+
+
+
+
+
+
       \begin{block}{5. Selective Algorithm}
-	
+
           \begin{algorithm}[H]
           \SetInd{0.5em}{1em}
           \DontPrintSemicolon
-          \textbf{Input:} $\F$, $\X$, $n$ \\ \textbf{Init:} $t, m \leftarrow 0$, $\F_0 \leftarrow \F$, $X_1,X_2,\ldots \iid \mathcal{U}(\X)$ \;	
+          \textbf{Input:} $\F$, $\X$, $n$ \\ \textbf{Init:} $t, m \leftarrow 0$, $\F_0 \leftarrow \F$, $X_1,X_2,\ldots \iid \mathcal{U}(\X)$ \;
           \While{$t <n$}{
 	    $m \leftarrow m+1$ \\
 	    \If{$X_m \in \textsc{ArgMax}(\F_t) $}{
@@ -290,14 +290,14 @@ $ x \in \textsc{ArgMax}(\F_n) $~i.f.f.~$ \min_{i \leq n} f^{\star}(X_i)+ k \norm
 \vskip\botBlock
 \end{block}
 \sepblock
-	
+
 \begin{block}{References}
 	{\tiny \bibliography{../sample_library}}
 \vskip\botBlock
 \end{block}
-	
+
 \end{column}
 
-  \end{columns}  
+  \end{columns}
 \end{frame}
 \end{document}

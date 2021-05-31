@@ -1,0 +1,402 @@
+\documentclass[landscape,a0paper,fontscale=0.265]{baposter} %fontscale=0.277
+
+\usepackage{calc}
+%\usepackage{fourier}
+\newcommand\Warning{%
+ \makebox[1.4em][c]{%
+ \makebox[0pt][c]{\raisebox{.1em}{\small!}}%
+ \makebox[0pt][c]{\color{red}\Large$\bigtriangleup$}}}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{relsize}
+\usepackage{multirow}
+\usepackage{rotating}
+\usepackage{bm}
+\usepackage{url}
+\usepackage{cancel}
+\usepackage{array}
+
+\usepackage{graphicx}
+\usepackage{xargs}
+\usepackage{multicol}
+
+\usepackage{enumitem}
+
+%\usepackage{times}
+%\usepackage{helvet}
+%\usepackage{bookman}
+\usepackage{palatino}
+\usepackage{subfiles}
+
+
+\usepackage{ragged2e}
+\usepackage{setspace}
+
+\usepackage{anyfontsize}
+
+
+
+\usepackage[pages=some]{background}
+
+\newcommand{\captionfont}{\footnotesize}
+
+
+
+\graphicspath{{images/}{../img/}}
+
+\usepackage{empheq}
+\usepackage{dsfont}
+\usepackage{enumitem}
+\usepackage{stmaryrd}
+
+%%%%%%%% added by mainak %%%%%%%%%%%
+\usepackage{mathsymbols}
+\usepackage[scaled]{helvet}
+%\usepackage{nimbussans}
+\usepackage[T1]{fontenc}
+\usepackage{subfigure}
+\usepackage{bbm}
+
+% Import tikz packages for subfiles
+\usepackage{tikz}
+\usetikzlibrary{arrows, positioning, calc}
+\usetikzlibrary{decorations.pathreplacing, patterns}
+
+\usepackage[ruled]{algorithm2e}
+% change font size of algorithm
+\SetAlFnt{\small}
+\SetAlCapFnt{\small}
+\SetAlCapNameFnt{\small}
+\setlength{\algomargin}{0em}
+\SetAlCapHSkip{0em}
+\usepackage{algorithmic}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% \newtheorem{thm}{Theorem}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% Some math symbols used in the text
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Multicol Settings
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\setlength{\columnsep}{1.5em}
+\setlength{\columnseprule}{0mm}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Save space in lists. Use this after the opening of the list
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\compresslist}{%
+\setlength{\itemsep}{1pt}%
+\setlength{\parskip}{0pt}%
+\setlength{\parsep}{0pt}%
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Begin of Document
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Here starts the poster
+%%%---------------------------------------------------------------------------
+%%% Format it to your taste with the options
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Define some colors
+
+%\definecolor{lightblue}{cmyk}{0.83,0.24,0,0.12}
+\definecolor{lightblue}{rgb}{0.145,0.6666,1}
+\definecolor{tpt}{RGB}{200,34,84}
+\definecolor{goldengatered}{RGB}{255,41,46}
+% \definecolor{orange}{RGB}{31,58,224}
+%\definecolor{inriared}{HTML}{E52D37}
+
+\def\maincolor{lightblue}
+
+\newcommand{\mydot}{\hspace*{-0.3ex}%
+\raisebox{0.2ex}{\color{\maincolor}\rule{1.1ex}{1.1ex}}%
+\hspace*{0.4ex}%
+}
+
+\hyphenation{resolution occlusions}
+%%
+\begin{poster}%
+  % Poster Options
+  {
+  % Show grid to help with alignment
+  grid=false,
+  columns=3,
+  % Column spacing
+  colspacing=0.35em,
+  % Color style
+  bgColorOne=white,
+  bgColorTwo=lightblue,
+  % borderColor=goldengatered,
+  borderColor=black,
+  % headerColorOne=goldengatered,
+  headerColorOne=\maincolor,
+  headerColorTwo=purple,
+  headerFontColor=white,
+  boxColorOne=white,
+  boxColorTwo=lightblue,
+  % Format of textbox
+  textborder=rectangle,
+  % Format of text header
+  eyecatcher=true,
+  headerborder=closed,
+  headerheight=0.148\textheight,
+%  textfont=\sc, An example of changing the text font
+  headershape=rectangle,
+  headershade=plain,
+  headerfont=\Large\fontfamily{\sfdefault}\bfseries, %Sans Serif
+  textfont={\setlength{\parindent}{1.5em}},
+  boxshade=plain,
+ % background=shadelr,
+  background=plain,
+  linewidth=0.5pt
+  }
+  % Eye Catcher
+  {
+  % \rotatebox[origin=c]{-90}{\includegraphics[height=16em]{images/logo_inria.pdf}}
+  \begin{minipage}{.17\linewidth}
+    \centering
+    \includegraphics[width=0.6\linewidth]{logo_cmla}
+  \end{minipage}
+  }
+  % Title
+  {\huge\fontfamily{\sfdefault}\bfseries {
+    Learning step sizes for unfolded sparse coding
+  }
+    \vspace{.7em}
+  }
+  % Authors
+  {\Large  {\textbf
+    {
+      Pierre Ablin$^{*}$, \hspace{5pt}
+      Thomas Moreau$^{*}$, \hspace{5pt}
+      Mathurin Massias, \hspace{5pt}
+      Alexandre Gramfort}}\\
+       \vspace{5pt}
+   \normalsize{
+   Univ. Paris-Saclay, INRIA, Parietal team, Saclay, France.
+   $^*$ Contributed Equally
+   \\}
+   \vspace{-10pt}
+  }
+  % University logo
+  {% The makebox allows the title to flow into the logo, this is a hack because of the L shaped logo.
+    %\includegraphics[height=7.5em]{images/logo_sb.pdf}
+    %\includegraphics[height=3.0em]{images/bilgi.jpg}
+    \begin{minipage}{.18\linewidth}
+     \hfill
+      \begin{minipage}{\linewidth}
+        \centering
+        \includegraphics[width=0.9\linewidth]{example-image-golden}\\
+        \includegraphics[width=.8\linewidth]{logo_cachan}\\
+      \end{minipage}
+    \end{minipage}
+  }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Now define the boxes that make up the poster
+%%%---------------------------------------------------------------------------
+%%% Each box has a name and can be placed absolutely or relatively.
+%%% The only inconvenience is that you can only specify a relative position
+%%% towards an already declared box. So if you have a box attached to the
+%%% bottom, one to the top and a third one which should be in between, you
+%%% have to specify the top and bottom boxes before you specify the middle
+%%% box.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% A coloured circle useful as a bullet with an adjustably strong filling
+\newcommand{\colouredcircle}{%
+  \tikz{\useasboundingbox (-0.2em,-0.32em) rectangle(0.2em,0.32em);
+        \draw[draw=black,fill=purple,line width=0.03em] (0,0) circle(0.18em);}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\headerbox{Solving sparse linear inverse problems}{name=intro,column=0,row=0}{
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{itemize}[leftmargin=*,nolistsep]
+\setlength\itemsep{0.01em}
+\item \textbf{Objective:} Solve the Lasso for a fixed $D$ and $x \sim \mathbb P$.
+\[
+  z^*(x) = \argmin_z F_x(z) = \frac{1}{2}\|x - Dz\|_2^2 + \lambda \|z\|_1
+\]%
+\vskip-1em
+\item \textbf{Iterative algorithm:} Use ISTA for each $x$
+\item \textbf{Deep Learning:} Use a NN to learn a mapping
+\[
+  \Phi^T_\Theta: x \mapsto z^*(x); \quad \text{ for } x \sim \mathbb P
+\]
+\end{itemize}
+}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\headerbox{Learned ISTA \hskip11.5ex\normalsize {[Gregor \& Le Cun 2010]}}{name=lista,column=0,below=intro,span=1}{
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\raggedright
+\textbf{ISTA:}
+$
+  z^{(t+1)} = \text{ST}(z^{(t)} - {\color{orange}\gamma} D^\top(Dz^{(t)} - x), {\color{orange}\gamma}\lambda)
+$,\\
+where ${\color{orange}\gamma}$ is the step size, usually chosen as ${\color{orange}1/L}$.\\[.5em]
+\textbf{LISTA:} Let $W_z = I_m  - {\color{orange}\gamma} D^\top D;~W_x = {\color{orange}\gamma} D^\top$ and ${\color{orange}\beta}={\color{orange}\gamma}$\\[1em]
+
+\begin{minipage}{.55\textwidth}
+  $z^{(t+1)} = \text{ST}(W_z z^{(t)} + W_x x, \lambda {\color{orange}\beta})$\\[.5em]
+  \textbf{Re-parametrization:}\\[.5em]
+    $W_z = I_m - {\color{orange}\alpha} W^\top D;~ W_x = {\color{orange}\alpha} W^\top$
+\end{minipage}%
+\begin{minipage}{.45\textwidth}
+    \centering
+    skjhfkjhdskjfdfh
+\end{minipage}
+
+\vskip1.5em
+\mydot Learn parameters $\Theta = \{W^{(t)}, {\color{orange}\alpha}^{(t)}, {\color{orange}\beta}^{(t)}\}$
+\vskip1em
+\begin{minipage}{.33\textwidth}
+  \centering
+  \textbf{Supervised learning}\\[.5em]
+  Ground truth available $s_1, \dots, s_N$
+  \[
+    \sum_{i=1}^N (\Phi^T_\Theta(x_i) - s_i)^2
+  \]
+\end{minipage}\vline
+\begin{minipage}{.33\textwidth}
+  \centering
+  \textbf{Semi-supervised learning}\\[.5em]
+  Compute $s_i = \argmin_z F_{x_i}(z)$
+  \[
+    \sum_{i=1}^N (\Phi^T_\Theta(x_i) - s_i)^2
+  \]
+\end{minipage}\vline
+\begin{minipage}{.33\textwidth}
+  \centering
+  \textbf{Unsupervised learning}\\[.5em]
+  Learn to solve the Lasso
+  \[
+    \sum_{i=1}^N F_{x_i}(\Phi^T_\Theta(x_i))
+  \]
+\end{minipage}%
+
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\headerbox{Local smoothness constants}{name=theory,column=0,below=lista, span=1}{
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\noindent
+\mydot ${\color{orange}L} = \max \|Dz\|_2^2$ subject to $\|z\|_2=1$
+{\small
+\begin{align*}
+  F_x(z) & = f_x(z^{(t)}) + \langle \nabla f_x(z^{(t)}), z - z^{(t)}\rangle + \frac{1}{2}\|D(z-z^{(t)})\|_2^2 + \lambda\|z\|_1\\
+   & \le f_x(z^{(t)}) + \langle \nabla f_x(z^{(t)}), z - z^{(t)}\rangle + \frac{{\color{orange}L}}{2}\|z-z^{(t)}\|_2^2 + \lambda\|z\|_1
+\end{align*}
+}
+\mydot ${\color{orange}L_S} = \max \|Dz\|_2^2$ subject to $\|z\|_2=1, Supp(z) \subset S$.\\[.6em]
+{\centering ISTA with {\bf greater step-size}: {\color{orange}$\gamma = 1/L_s$}\\}
+}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{posterbox}[name=center,column=1,row=0,span=1,
+                  boxheaderheight=0em, height=1,
+                  boxColorOne=\maincolor,]{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \vskip3em
+    \noindent
+    \LARGE \color{white}\underline{\textbf{Theorem:}} The weights of a neural network trained to solve the lasso asymptotically only learn a step size.
+    \[
+      \frac{\alpha^{(t)}}{\beta^{(t)}} W^{(t)} \xrightarrow[t\to\infty]{} D
+    \]
+    \vskip2em
+  \centering
+    \includegraphics[width=.8\textwidth]{example-image-a}\\[3em]
+     { \centering
+      \includegraphics[width=.35\textwidth]{QR_unitag}\\[1em]}
+\end{posterbox}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\headerbox{Improving ISTA step-size}{name=exp,column=2,row=0,span=1}{
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \raggedright
+
+  % \textbf{Real data} \\
+\textit{Better step-sizes for ISTA}\\[.4em]
+\vskip2pt
+\begin{itemize}[nolistsep,leftmargin=*]\itemsep.4em
+	\item Back-tracking line-search
+  \item {\bf OISTA:} Adapt step-sizes to {\bf Local smoothness constants ${\color{orange}L_S}$}\\
+  \item {\bf SLISTA:} Learn only step-sizes with LISTA.
+\end{itemize}
+  \vskip.5em
+  \includegraphics[width=0.5\columnwidth]{example-image-a}%
+  \includegraphics[width=0.5\columnwidth]{example-image-a}
+  \vskip1em
+  {\centering The step-sizes learned by SLISTA tend to be in $[{\color{orange}\frac{1}{L_s}}, {\color{orange}\frac{2}{L_S}}]$.\\[.5em]}
+  {\color{white}.}
+ }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\headerbox{Varying the sparsity}{name=next,column=2,below=exp, span=1}{
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\raggedright
+SLISTA works better when $z^*$ is sparse as this reduces ${\color{orange}L_S}$.\\[1em]
+\includegraphics[width=\linewidth]{example-image-golden}
+}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\headerbox{References}{name=ref,column=2,below=next, span=1}{
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\vspace{-0.1cm}
+\small{
+\begin{itemize}[itemsep=.3em,nolistsep,leftmargin=*]
+  \item Gregor, K. \& Le Cun, Y. (2010) {\color{lightblue}  Learning Fast Approximations of Sparse Coding.} ICML.
+  % \item Giryes, R., Eldar, Y. C., Bronstein, A. M. \& Sapiro, G. (2018) {\color{lightblue} Tradeoffs between Convergence Speed and Reconstruction Accuracy in Inverse Problems.} IEEE Trans. on Sig. Proc.
+  \item Chen, X., Liu, J., Wang, Z. \& Yin, W. (2018) {\color{lightblue} Theoretical Linear Convergence of Unfolded ISTA and its Practical Weights and Thresholds.} NeurIPS.
+  \item Liu, J., Chen, X., Wang, Z. \& Yin, W (2019). {\color{lightblue} ALISTA: Analytic Weights are as good as Learned weigths in LISTA.} ICLR.
+  \item Moreau, T. \& Bruna, J. (2017). {\color{lightblue} Understanding Trainable Sparse Coding with Matrix Factorization.} ICLR.
+
+\end{itemize}
+}
+%\vspace{-0.1cm}
+}
+
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \headerbox{Acknowledgement}{name=ack,column=2,below=ref, span=1}{
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \raggedright
+% \vspace{2pt}
+% \small{
+% French National Research Agency grants ANR-14-NEUC-0002-01 and ANR-16-CE23-0014, and the ERC Starting Grant SLAB ERC-YStG-676943
+% } \vspace{1pt}
+% }
+
+\end{poster}
+
+\end{document}
+
