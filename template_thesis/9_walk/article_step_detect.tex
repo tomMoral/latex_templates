@@ -1,0 +1,465 @@
+\documentclass[../thesis.tex]{subfiles}
+\crossref{}
+
+\makeatletter
+\providecommand*{\input@path}{{../}}
+\makeatother
+
+
+\begin{document}
+\def\crossref{}
+
+
+\chapter{Template-based step detection from accelerometer signals}
+\label{chap:walk:step_detect}
+
+
+
+\startcontents[chap7]
+\Mprintcontents{chap7}
+
+
+\textbf{Authors:}
+Laurent Oudre\footnotemark[1]\footnotemark[2], Rémi Barrois-Müller\footnotemark[2], Thomas Moreau\footnotemark[2]\footnotemark[3],
+Charles Truong\footnotemark[2]\footnotemark[3], Stéphane Buffat\footnotemark[2], Pierre-Paul Vidal\footnotemark[2]
+
+\footnotetext[1]{L2TI, Universit{\'e} Paris 13, France.}
+\footnotetext[2]{COGNAC-G (UMR 8257), CNRS Universit{\'e} Paris Descartes, France.}
+\footnotetext[3]{CMLA (UMR 8536), CNRS ENS Cachan, France .}% 
+
+\textbf{Abstract:}
+This article presents a method for step detection from accelerometer signals based on template matching. The principle of our step detection algorithm is to recognize the start and  end times of the steps in the signal thanks to a predefined set of templates (library of steps). The algorithm is tested on a database of 1020 recordings, composed of healthy patients and  patients with various neurological or orthopaedic troubles. Simulations on more than 40000 steps show that even with a library of only 5 templates, our method achieves remarkable results with a 98\% recall and a 98\% precision.  The method  is robust to parameter changes, adapts well to pathological subjects and can be used in a medical context for robust step estimation and gait characterization.
+
+
+\textbf{Keywords:}
+gait analysis, biomedical signal processing, pattern recognition, step detection, physiological signals\\
+
+
+\section{Introduction}
+
+Pathologies affecting posture, balance, and gait control are threatening the autonomy of patients not to mention the risk of fall and therefore require rehabilitation intervention as early as possible. However, it remains difficult to accurately evaluate  the various specific interventions during the rehabilitation process and the optimal content of exercise interventions they should involve.  If only for these reasons, it would be interesting to learn how to monitor motor sensorimotor behavior at large and locomotion in particular which is a growing area in medical engineering science \citep{mariani,marschollek2008performance,willemsen1990automatic,dijkstra2008detection,han2006gait,Ayachi2016,williamson2000gait}. It requires several steps: first, we wish to investigate how to monitor sensorimotor processing in behaving patients in the doctor office and the resulting cognitive load it implies. Second, we want to learn how to construct databases with the quantitative variables recorded in that 
+process, in order to make longitudinal studies of behaving individuals. Third, we would like to merge these individual databases in large data banks to define statistical norms, which is mandatory to detect dysfunctions or pathologies at the earliest stage possible. In that process we meet at least three main problems: using pervasive or ubiquitous computing to collect data; facing large inter-individual variability in the studied HMCs; aggregating highly heterogeneous data to build the databank.
+
+
+There exist many software applications on the market that use wearable sensors (namely accelerometers, gyroscopes, magnetometers and/or GPS) to calculate the number of steps made in a day \citep{tran2012high,naqvi2012step}, the traveled distance in a day \citep{renaudin2012step,kim2004step}, the average speed, the daily amount of time spent in walking, running, sitting, standing, laying  \citep{oner2012towards,brajdic2013walk}, useful for rehabilitation. Most of the algorithms published in this context are either dedicated to one specific terminal or mobile phone, or they are copyrighted and not freely available for research.
+
+The main idea behind the algorithm presented in this paper is to automatically detect the steps from inertial sensor signals thanks to a library of templates extracted from real signals. It provides a novel, robust and precise step detection method which allows the user not only to count the steps, but also to locate when they occurred, how long they lasted, etc. These features can be useful either for personal or medical use. In particular, the algorithm has been tested on a large database containing 1020 walk exercises performed by healthy and pathological subjects at unconstrained speeds, which confirms the robustness of the presented method.
+
+
+
+This article is organized as follows: \autoref{sec:walk_sd:background} defines the task of step detection and gives an overview of state-of-the-art methods. \autoref{sec:walk_sd:method} describes the data used for training and testing, the method,  and the evaluation metrics. \autoref{sec:walk_sd:results} presents the results of our method, the influence of the parameters and compares the algorithm to state-of-the art methods. \autoref{sec:walk_sd:discussion} provides a discussion on the robustness of the method and several insights for the possible use of this algorithm in a clinical context.
+
+
+\section{Background}
+\label{sec:walk_sd:background}
+
+\subsection{What is a step ?}
+\label{sub:walk_sd:stepdef}
+
+
+Locomotion is a hierarchical and complex phenomenon composed of different entities such as strides, steps, and phases  \citep{auvinet2002reference,mariani}. 
+\begin{itemize}
+\item  Considering one foot, the stride is the succession of two phases: the \textit{swing phase} (when the foot is in the air), and the \textit{stance phase} (when the foot is in contact with the ground). The stance phase occurs between the heel-strike (moment when the foot hits the ground) and the toe-off (moment when the toes go off the ground), while the swing phase occurs between the toe-off and the next heel-strike.
+ \item A \textit{stride} is defined as the event that occurs between two heel-strikes of the same foot. 
+\item A \textit{step} is defined as the event that occurs between successive heel strikes of opposite feet. A stride is therefore composed of two steps: one for the right foot, one for the left foot.
+\end{itemize}
+In the formal medical definition, a step is supposed to start when the heel strikes the ground and to finish somewhere in the end of the stance phase. It is not related to the foot activity since the foot is also moving in the swing phase. We choose in this article another definition: a step is defined in the following as the whole period of activity of a foot (when the foot is moving).  The beginning of the step is  defined as the heel-off (moment when the heel leaves the floor) and end of the step is defined as the foot-flat (moment when the foot is stabilized on the floor).This new definition allows to consider the whole period of activity of a foot as a step, which makes it more adapted to step detection. Note that it does not change the number of steps and that it is easy to switch back to the medical definition once the heel-off and foot-flat instants have been detected.
+
+\color{black}
+\subsection{Existing methods}
+ Current algorithms can be classified in two categories:
+\begin{itemize}
+	\item Step counting algorithms: the aim is only to know the number of steps performed by the subject
+	\item Step detection algorithms: the aim is to locate when the step occurred, and eventually to give specific timings (heel-strike, toe-off, etc.). These algorithms can also be used for step counting.
+\end{itemize}
+
+Among step detection algorithms, two main approaches have been proposed: the use of filtering/thresholding/peak detection techniques and the use of template matching.
+The former aims to recognize one specific event, supposedly characteristic of the step (such as a local maximum or the time when the signal exceeds a threshold). Most of the time, these algorithms include a preprocessing step where the signal is filtered so as to emphasize the event that they seek to detect or to remove other events. The most well-known pre-processing stage was designed by \citet{pan1985real} and is composed of several signal processing blocks (bandpass filtering, derivation, squaring, etc.). Designed at first for ECG signals, this pre-precessing has been used in various step detection methods  \citep{ying2007automatic,libby2012simple,marschollek2008performance,thuer2008step}. After this possible processing stage, the steps are detected with empirical or dynamic thresholds, peak detection methods, of a combination of both \citep{mladenov2009step,dijkstra2008detection,fortunestep}. Other methods seek to detect each phase of the walking process by using dedicated signal processing 
+techniques (such as peak detection, zero-crossing, etc.) \citep{willemsen1990automatic,han2006gait}. Unfortunately, these methods  heavily rely on the calibration of several parameters (width of the bandpass filter, window length, thresholds, etc.) \citep{ying2007automatic,libby2012simple,marschollek2008performance,thuer2008step} which are difficult to estimate and thus set according to empirical experience. Moreover, these methods often assume some prior knowledge on the shape of a step \citep{willemsen1990automatic,han2006gait}, which significantly limits the detection of unconventional patterns found with mobility-impaired patients.
+
+
+For these reasons, we have decided in this article to focus on the second type of step detection methods, based on template matching. The main intuition behind this is that there are several types of steps (according to interpersonal variability, age, speed and pathology). Therefore, it is irrelevant to try to detect steps with one specific model (which is basically what is done with other methods since they only consider one set of parameters, thresholds, detection criteria, etc.). In order to overcome this issue, it is necessary to use a library of models (in our case  a library of patterns) which represent typical step cycles. Hopefully, the use of this library can improve the robustness of the detection and paradoxically, prevent the overfitting induced by the choice of many parameters. Note that while commonly used in several other fields, this approach is novel in the context of step detection. We are aware of only one article mentioning the use of templates for step detection. \citet{ying2007automatic} is using  one single template automatically extracted with filtering/thresholding/peak detection methods (thus relying on many parameters) and not from raw data. Also, in their paper, a different template is extracted for each subject, and only used for this particular subject. The novelty of the algorithm presented in this paper is that it uses a limited set of parameters whose influence is carefully studied and analysed. Also, our method is tested on a large database, with healthy and pathological subjects, at various speeds and in a rigorous cross-validation context.
+
+
+
+
+\section{Data, method and evaluation}
+\label{sec:walk_sd:method}
+
+\subsection{Data Acquisition and First Observations}
+
+
+\begin{table*}[t]
+\begin{center}
+\begin{tabular}{|p{3cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|}
+%
+\hline
+ \textbf{Group} &\textbf{Number of exercises}&\textbf{Number of subjects}&\textbf{Sex (M/F)}&\textbf{Age (yr)}&\textbf{Height (cm)}&\textbf{Weight (kg)}\\
+\hline
+\hline
+Healthy subjects & 242 & 52 & 35/17 & 36.4 (20.6) &  173.4 (10.8) &  70.7 (12.2)\\
+\hline
+Orthopedic diseases & 243 & 53 & 26/27 & 60.1 (19.3) &  169.2 (10.2) &  77.4 (16.8)\\
+\hline
+Neurologic diseases & 535 & 125 & 80/45 & 61.6 (13.2) &  169.8 (8.7) &  72.7 (15.5)\\
+\hline
+\hline
+\textbf{Total} & 1020 & 230 & 141/89 & 55.5 (19.6) &  170.5 (9.7) &  73.4 (15.3)\\
+\hline
+\end{tabular}
+\end{center}
+\caption{subjects' characteristics. For the age, height and weight, the mean and the standard deviations are displayed.}\label{tab:walk_sd:subjects}
+\end{table*}
+
+
+The data used for the conception and testing of the method presented in the article has been provided by the following medical departments: Service de chirurgie orthop{\'e}dique et de traumatologie de l'H{\^o}pital Europ{\'e}en Georges Pompidou, Assistance Publique des H{\^o}pitaux de Paris, Service de m{\'e}decine physique et de r{\'e}adaptation de l'H{\^o}pital Fernand Widal, Assistance Publique des H{\^o}pitaux de Paris, Service de neurologie de l'H{\^o}pital d’Instruction des Arm{\'e}es du Val de Gr{\^a}ce, Service de Sant{\'e} des Arm{\'e}es. The study was validated by a local ethic comity (Comit{\'e} de Protection des Personnes Ile de France II, CPP 2014-10-04 RNI) and both patients and control subjects gave their written consent to participate. All signals have been acquired at 100 Hz with wireless XSens MTw$^{\mbox{\tiny TM}}$ sensors located at the right and left foot and fixed using a velcro band designed by XSens$^{\mbox{\tiny TM}}$. The signals obtained with both sensors were automatically 
+synchronized by the acquisition software.
+All subjects were asked to:
+\begin{itemize}
+	\item stand quiet for 6 seconds
+	\item walk 10 meters at preferred walking speed on a level surface
+	\item make a U turn
+	\item walk back
+	\item stand quiet 2 seconds
+\end{itemize}
+For practical reasons, patients kept their own shoes. The database is composed of 230 subjects who performed the protocol between 1 and 10 times, which leads to 1020 recordings.  The subject's characteristics are presented in \autoref{tab:walk_sd:subjects}. Healthy subjects had no known medical impairment. The orthopedic group is composed of 2 cohorts of distinct pathologies: lower limb osteoarthrosis and cruciate ligament injury. The neurologic group is composed of 4 cohorts: hemispheric stroke, Parkinson’s disease, toxic peripheral neuropathy and radiation induced leukoencephalopathy. 
+
+
+
+The protocol includes 2 sensors (left and right foot), and each of them records a 9-dimensional signal (3D accelerations, 3D angular velocities, 3D magnetic fields), possibly with some recalibrated data provided by the XSens$^{\mbox{\tiny TM}}$ software (such as the vertical acceleration in the direction of the gravity). Instead of considering all these dimensions, we decided to only use a subset of them, and select the most relevant in the context of step detection. This decision has been made based on observations of real data and physiological reasons provided by doctors. We decided to only select the components that are the most reflective of the locomotion process (see \autoref{capteurs} for the definition of the axis): the Z-axis acceleration, the recalibrated vertical acceleration (vertical movements of the foot) and the Y-axis angular velocity (swing in the direction of the walk). We expect these components to strongly react to the steps, making them identifiable. 
+
+
+
+
+Examples of these 3 components (Z-axis acceleration, vertical acceleration and Y-axis angular velocity) recorded at the right foot are presented on walk/ \autoref{fig:walk_sd:sain} and \autoref{fig:walk_sd:atteint} for respectively an healthy and hip-injured patient. It appears on these walk/ that the amplitudes of the signals are clearly different and it is likely that classical threshold-based methods would hardly perform well on both subjects. However, the structure and shape of the step is roughly the same for both subjects so it might be relevant to use a template-base method. Nevertheless, these examples also display the main difficulties in conceiving an automatic algorithm for step detection:
+\begin{itemize}
+ \item The uncertainties in the definition of the starts and ends of the steps. Indeed, we can see on \autoref{fig:walk_sd:sain}, that many choices would be acceptable: depending on the considered definition, the results may be different. 
+\item The variability of the step patterns according to the pathology, the age, the weight, etc. For example, on \autoref{fig:walk_sd:atteint}, the subject is dragging his feet, causing an abrupt change in the step pattern (noisy part at the end of the step).
+\end{itemize}
+
+
+
+
+
+
+
+
+
+
+\subsection{Description of the method}
+
+
+
+The principle of our step detection algorithm is to recognize the steps in the signals thanks to a predefined set of templates. More precisely, our method uses a set of templates  $\mathcal{P}$: these templates have been manually extracted from real accelerometer data and checked by doctors and specialists of locomotion.  Each template $p\in\mathcal{P}$ is a three-dimensional signal of length $|p|$ (vertical acceleration, Z-axis acceleration and Y-axis angular velocity) corresponding to one step.
+
+These templates are to be compared to the signal we want to study by calculating some correlation coefficients. As the sequences we want to detect are variable in duration as well as in amplitude, we want to use a measure of fit that is independent of the scale but is able to identify the correspondences in shape. Also, we want the comparison to be independent of the orientation of the sensor, so any DC component should be removed. In this context, it seems natural to use the Pearson correlation coefficient, which satisfies all these conditions, and defined for two one-dimensional vectors $y$ and $z$ of length $n$ as
+\begin{equation}
+    \rho_{y,z}=\frac{\mathrm{cov}(y,z)}{\sigma_y \sigma_z} =\frac{E[(y-\mu_y)(z-\mu_z)]}{\sigma_y\sigma_z} 
+\label{eq:pear}
+\end{equation} 
+where $(\mu_y,\mu_z)$,  $(\sigma_y,\sigma_z)$ are respectively the mean and standard deviation of $y$ and $z$.
+
+
+
+Let $x$ be a three-dimensional signal: we want to detect the steps by using the set of templates $\mathcal{P}$. Let us introduce the following notations:
+\begin{itemize}
+\item $|\mathcal{P}|$ is the number of three-dimensional templates
+\item $|x|$ (resp. $|p|$) is the length of the three-dimensional vector $x$ (resp. $p$)
+ \item $x^{(k)}$ (resp. $p^{(k)}$) is the $k^{th}$ component of $x$ (resp. $p$). In our case we have $k \in \left\lbrace 1, 2,  3\right\rbrace $
+\item $x^{(k)}[t_1 : t_1]$ is the portion of $x^{(k)}$ between time samples $t_1$ and $t_2$ (we therefore have $x^{(k)}[1 : |x|] = x^{(k)}$)
+\end{itemize}
+
+
+The first step of the algorithm consists in calculating the Pearson correlation coefficients between the templates and the signal, for all possible time positions and all three components:
+\begin{equation}
+\begin{split}
+ \forall k \in \left\lbrace 1, 2,  3\right\rbrace, \ \ \ \forall p \in \mathcal{P}, \ \ \ \forall t \in \llbracket 1, |x|-|p|+1 \rrbracket\\  r(k,p,t)= \rho \left( p^{(k)},x^{(k)}[t : t+|p|-1]\right) 
+\end{split}
+\end{equation}
+$r(k,p,t)$ is the correlation between the $k^{th}$ component of template $p$ and the  $k^{th}$ component of the signal at time sample $t$.
+
+
+The second step is a local maxima search among the $r(k,p,t)$ coefficients in order to extract the possible steps. $r(k,p,t)$ is selected as a local maximum if it is greater than its nearest temporal neighbors. We define the set $\mathcal{L}$ of possible steps as:
+\begin{equation}
+\begin{split}
+ \mathcal{L} = \left\lbrace (k,p,t)\mbox{ s.t. } r(k,p,t) > r(k,p,t-1)\right. \\ \left. \mbox{ and } r(k,p,t) > r(k,p,t+1)\right\rbrace 
+\end{split}
+\end{equation}
+The $\mathcal{L}$ contains all acceptable positions for the steps, and the coefficients $r(k,p,t)$ with $(k,p,t)\in\mathcal{L}$ can be interpreted as the likelihood of having a step similar to the pattern $p$ at time sample $t$. 
+
+Our step detection algorithm takes as input the set $\mathcal{L}$ and works as a greedy process. At each iteration,  the largest value $r(k^*,p^*, t^*)$ with $(k^*,p^*, t^*)\in\mathcal{L}$ is selected: if the step $p^*$ positioned at time sample $t^*$ overlaps with a previously detected step, it is discarded and we switch to the next largest value. Otherwise, if step $p^*$ can be positioned at time $t^*$, the step is detected and all time samples between $t^*$ and $t^*+|p^*|-1$ are forbidden for the next iterations. The process is stopped when all time samples are forbidden, when the set of possible steps $\mathcal{L}$ is empty, or when all values $r(k,p,t)$ with $(k,p,t)\in\mathcal{L}$  are lower than a threshold $\lambda$. Note that in practice, the main purpose of threshold $\lambda$ is to speed up the algorithm, as it reduces the size of set $\mathcal{L}$. The algorithm is summarized on \autoref{alg:searching}. 
+
+
+\begin{algorithm}[th]
+ \caption{Step Detection Algorithm}
+ \label{alg:searching}
+ \begin{algorithmic}[1]
+ \STATE \textbf{Input: }{Set of possible steps $\mathcal{L}$}
+ \STATE \textbf{Output: }{Set of start times $\mathcal{T}_{start}$, set of end times $\mathcal{T}_{end}$}
+  \STATE Set of forbidden time positions $\mathcal{F}= \emptyset$;
+  \STATE $\mathcal{T}_{start}= \emptyset$,  $\mathcal{T}_{end}= \emptyset$
+  \WHILE {$\mathcal{F} \neq \left\lbrace 1, \ldots, |x|\right\rbrace  \mbox{ or } \mathcal{L} \neq \emptyset \mbox{ or } \max \mathcal{L} > \lambda$}
+ \STATE $(k^*,p^*, t^*) = \underset{(k, p, t)\in\mathcal{L}}{\operatorname{argmax}}\ r(k,p,t)$;
+\IF{ $\left\lbrace t^*, \ldots,  t^* + |p^*| - 1\right\rbrace \notin \mathcal{F}$ }
+\STATE{
+   $t^* \rightarrow \mathcal{T}_{start}$;\newline
+   $t^*+|p^*|-1 \rightarrow \mathcal{T}_{end}$;\newline
+   $\left\lbrace t^*, \ldots, t^*+|p^*|-1\right\rbrace \rightarrow \mathcal{F}$;\newline
+   }
+$\mathcal{L} = \mathcal{L} \backslash (k^*,p^*, t^*)$;
+\ENDIF
+\ENDWHILE
+
+\end{algorithmic}
+\end{algorithm}
+
+A last  post-processing step can be performed so as to discard the steps detected when the patient was actually not moving. These false detections occur when a fit is  found with one template, even though the signal is almost equal to zero after DC component removal: this is in fact due to the invariance in scale provided by the Pearson correlation coefficients. A solution can be found by processing the final list of detected steps, and removing the steps whose standard deviation is way lower than the one of the template that was used for the detection. Formally, this step involves a threshold $\mu$: given a detected step with start and end times $t_{start}$ and $t_{end}$, detected thanks to the pattern $p^{(k)}$, the step is to be discarded if
+\begin{equation}
+ \sigma_{x^{(k)}[t_{start} : t_{end}]} < \mu\  \sigma_{p^{(k)}}
+\end{equation}
+where $\sigma_{.}$ stands for the empirical standard deviation operator.
+
+
+
+\subsection{Evaluation}
+\label{sec:walk_sd:eval}
+
+
+All steps were manually annotated by specialists using a software allowing to point with the mouse the starts (foot-flat) and the ends (heel-off) of the foot flat periods during which the sensor is not moving.  The annotations were performed thanks to the Z-axis acceleration (normal to the upper foot surface) which is the most sensitive direction to detect the movements of the foot with respect to the floor. For the tricky cases of pathological gaits, a first gross annotation was made and then refined by zooming on each step. The uncertainty of this annotation is evaluated to less than 0.2 s (20 samples) for each mouse click. In total, the database is composed of 40453 steps (20233 extracted on the right foot and 20220 on the left foot). Even though they had a distinct shape, the U-turn steps were also taken into account.
+ 
+
+The following precision/recall metrics are used for the evaluation of our method based on the annotations provided by the specialists.
+
+\textbf{Precision.} A detected step is counted as correct if the mean of its start and end times lies inside an annotated step. An annotated step can only be detected one time. If several detected steps correspond to the same annotated step, all but one are considered as false. The precision is the number of correctly detected steps divided by the total number of detected steps.
+
+\textbf{Recall.} An annotated step is counted as detected if the mean of its start and end times lies inside a detected step. A detected step can only be used to detect one annotated step. If several annotated steps are detected with the same detected step, all but one are considered undetected. The recall is the number of  detected annotated step divided by the total number of annotated steps.
+
+% The second one is a more precise precision/recall score at the sample scale. The idea is to label each sample of the exercise according to whether they belong to a detected step or not. By performing a similar labelling process with the annotations, we can define precision and recall scores at the sample scale. There are defined as the number of samples correctly detected as belonging to a step, divided respectively by the total number of samples detected as steps or by the total number of samples annotated as steps. These score answer the question : how precise is the algorithm in the detection of the step boundaries ?
+
+
+
+
+
+
+
+
+\section{Results}
+\label{sec:walk_sd:results}
+
+%  and the mean and standard deviation of these scores are presented.
+
+
+\subsection{Influence of the Parameters}
+\label{sub:walk_sd:param}
+
+
+
+The algorithm depends on 3 numerical parameters:
+\begin{itemize}
+ \item  The size of the pattern library  $|\mathcal{P}|$
+\item The stopping criterion $\lambda$
+\item The threshold for discarding  periods of no activity $\mu$
+\end{itemize}
+Note that  the algorithm is also influenced by the choice of the templates composing the library $\mathcal{P}$: this will be studied in the next section.
+
+
+In order to study the scope of influence of these 3 parameters,  a cross validation process is used:
+\begin{itemize}
+ \item  $|\mathcal{P}|$ three-dimensional step patterns are randomly chosen, so as to form the pattern library $\mathcal{P}$ 
+\item In order to avoid overfitting, all exercises performed by subjects that are used in the pattern library are then discarded from the test database.
+\item For each exercise of the test database, the step detection is performed with the $|\mathcal{P}|$ templates, and  the detected steps are compared to the annotations 
+\end{itemize}
+For each simulation,  the mean and standard deviation of the precision/recall scores on the test database are calculated, as described in \autoref{sec:walk_sd:eval}. This process is performed 100 times.
+
+
+The parameters are studied with the following grid search:
+\begin{itemize}
+ \item $|\mathcal{P}| : [5, 10, 15, 20, 25]$
+\item $\lambda : [0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9]$
+\item $\mu : [0.05,0.1, 0.15, 0.2, 0.25, 0.3]$
+\end{itemize}
+In total, 210 different configurations are considered.
+
+
+The configuration giving the best average results on 100 simulations is using $|\mathcal{P}| = 10$ templates, $\lambda = 0.8$ and $\mu = 0.15$, with an average recall of 96.59\% (std: 4.91) and an average precision of 97.03\% (std: 3.69). Note that these values correspond to the average on 100 simulations with randomly chosen templates: they do not reflect the optimal performances of the algorithm.
+
+We propose to use this configuration as a reference and study the influence of the parameters from this grid node. \autoref{fig:walk_sd:templates} presents the influence of the parameters on the precision and recall: on each figure, two of the parameters are fixed while the last one varies. The plots displays as boxplots the results obtained on the 100 simulations corresponding to the considered configuration.
+
+
+
+On \autoref{fig:walk_sd:influence_P}, it is visible that adding more templates to the library tends to increase the recall, but it has a negative effect on the precision. This is probably due to the cross-validation process used for  testing. Since the templates are randomly chosen, it is unknown if they belong to healthy or pathological subjects, to forward walking or U-turn, etc. Therefore, when $|\mathcal{P}|$  increases, it also increases the probability that a pathological step is used for detection. This is one of the predictable effect of this experiment: if a step within the library is \textit{unadapted} for the task, it causes false detection and thus lowers the performances. However, this does not mean that adding \textit{appropriate} steps in the library would degrade the performances: this problem will be investigated in the next section (as well as the questionable notion of \textit{appropriate steps}). When $|\mathcal{P}| = 5$, the limits of the algorithm are reached: due to 
+the small number of templates, the method crucially depends on the choice of the templates used for detection, thus causing a large number of outliers. The best compromise between precision and recall is obtained for  $|\mathcal{P}| = 10$, but this might only be due to the cross-validation setting: rather than an optimal number of templates to be used, it is likely that the composition of the library is more crucial to the performances of the algorithm.
+
+ 
+ The plot on \autoref{fig:walk_sd:influence_lambda} is coherent with the definition of the parameter: when $\lambda$ increases, only steps that are very correlated to the templates are selected: this increases the  precision, but decreases the recall. On the contrary, when $\lambda$ decreases, all possible steps are considered: the recall increases and the precision decreases.  These results also confirm the utility of parameter $\lambda$: by increasing $\lambda$ to an appropriate value (around 0.6-0.8), it is possible to increase the precision (and the robustness of the precision) while keeping the recall constant. Also, $\lambda$ has an impact on the computational cost: for example, using $\lambda=0.8$ instead of $\lambda=0$ allows to compute the results approximately 2 times faster. It is therefore interesting to use the largest value of $\lambda$ as possible. The best average performances are obtained for  $\lambda = 0.8$, which constitutes a good compromise between recall and 
+precision: indeed, with  $\lambda = 0.85$ some annotated steps are discarded and the recall drops.
+
+\autoref{fig:walk_sd:influence_mu} shows that parameter $\mu$ mainly influences the recall. Indeed, when $\mu$ is too large, all steps whose amplitude are too different from those of the templates are discarded. This has a double effect: if one of the templates corresponds to a pathological patient whose steps have small amplitude, then it will not be able to detect steps on healthy patients. The opposite situation can also occur. In fact, when $\mu$ increases, the normalization effect provided by the Pearson correlation coefficient \eqref{eq:pear} is neutralized. \autoref{fig:walk_sd:influence_mu} shows that $\mu$ should be no greater than 0.2 so that the recall does not drop.
+
+
+
+\subsection{Influence of the composition of the library}
+\label{sub:walk_sd:library}
+
+The performances of the algorithm are intuitively dependent of the library of templates used for detection. As previously seen, when inappropriate steps are added to the library, the performances may drop.  What would happen if the library of templates is composed only of healthy steps, but is to be used on patients with degraded walking abilities ? In order to correctly detect steps for a patient having e.g. an orthopedics disease, is it necessary to have patients with similar pathologies in the library of templates~? 
+
+To investigate this question, we propose to define two classes of subjects within the database: class A is typically composed of subjects who have no problem for walking, and class B is composed of subjects with severe pathologies that critically affect their locomotion. The idea is to study the cross-performances of the method on these two classes. The definition of these classes are non-trivial since the database contains gait recordings of patients cared for lower limb osteoarthritis, anterior cruciate ligament injury, hemispheric stroke, Parkinson’s disease and neuropathy. In each nosologic class, patients were quoted by the medical doctors of our group with  clinical scales specific to each pathology (WOMAC index : lower limb osteoarthritis ; Tegner Lysholm Knee Scoring Scale : anterior cruciate ligament injury ; Lower Limb Fugel Meyer scale : stroke ; UPDRS III : Parkinsons Disease ; TNSc : neuropathy). To allow the between pathology comparison, a transversal walking score (between 0 and 4) was 
+assigned to each patient by the medical doctors of our group.  Subjects with no problem for walking were graded 0, while other were graded from 1 to 4 (4 being the most severe degradation of locomotion). To have an idea, lower limb osteoarthritis patients with high functional manifestation walking troubles (use of cane, unable to climb stairs) were graded 4. Class A is defined as subjects with a locomotion grade of 0 (no problem) and Class B as subjects with locomotion grade of 3 or 4. In total  116 subjects are isolated from the database: 72 subjects in Class A (322 exercises, 4877 left steps, 4846 right steps), and 35  subjects in Class B (111 exercises, 3554 left steps, 3567 right steps). 
+
+
+In each simulation, the library is composed of templates belonging to only one class, and the test is performed on exercises belonging to only one class. All simulations are run with the default parameters  $|\mathcal{P}|=10$, $\lambda=0.8$ and $\mu=0.15$ (that gave the best average performances on 100 simulations in the grid search).  \autoref{tab:walk_sd:influence_patho} presents the results (recall/precision) averaged on 100 simulations.
+% These scores are to be compared to the values obtained with this configuration on random templates (average recall of 96.13\% (std : 1.59) and  average precision of 96.54\% (std : 2.25)). 
+A first observation is that Class A and Class B templates give similar (and good) performances on Class A subjects. This confirms the intuitive idea that it is easier to detect steps for healthy subjects. However, Class B templates used on Class B subjects do not perform so well: it might be due to the definition of the class which involves several types of pathologies. In fact, these severe pathologies might affect the steps shapes in a different way, so even though some pathological templates are used for detection, they might not correspond to the particular pathology of the test subject. To increase the scores, two strategies can be implemented: either introduce all types of degradations within the library, or add several healthy (or less pathological) steps which could smooth the results by introducing less specific examples. Interestingly, the results obtained on Class B subjects with random templates and with the exact same parameters (see \autoref{sub:walk_sd:param})
+ are better than those 
+obtained by using only Class B templates. This tends to show that in order to detect steps on severe pathological subjects, it is necessary to use a library composed of both healthy (or slightly pathological) and pathological steps.
+% A small experiment tend to nuance this assumption~: when the library of templates is composed of half Class A templates and half Class B templates, we see that the scores are not degraded for healthy subjects and slightly increase for pathological subjects. However, it seems that these subjects
+
+As far as cross-class detection is concerned, it seems that using only Class A templates for detecting Class B steps is not appropriate~ : the recall drops  while the precision  decreases. It is likely that these results are due to the amplitudes of the steps that greatly vary between healthy and pathological subjects. Due to parameter $\mu$, steps with low amplitude are hardly detectable with high amplitude templates (and vice-versa). Also, the durations of the steps might be inappropriate for detection, since pathological steps are in general longer than healthy steps.
+
+To summarize, two trends can be identified: as far as healthy subjects are concerned, the choice of templates is not crucial for the detection. But if the algorithm is to be used on pathological subjects, it appears that the best compromise would be to use a combination of healthy and pathological templates.
+
+
+
+\begin{table}[t]
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+  \cline{3-4}
+\multicolumn{2}{c|}{} & \multicolumn{2}{c|}{Test data}\\
+ \cline{3-4}
+\multicolumn{2}{c|}{} & Class A & Class B \\
+ \cline{1-4}
+ \multirow{4}{*}{Template data} &  \multirow{2}{*}{Class A} & R : 97.64 (1.17) & R : 89.74 (3.82)\\
+& & P : 97.45 (4.46)  & P : 95.75 (5.09)\\
+ \cline{2-4}
+& \multirow{2}{*}{Class B} & R : 97.80 (1.32) & R : 93.25 (4.17) \\
+& & P :  97.28 (2.17)	  & P : 93.13 (5.76)\\
+\hline
+\end{tabular}             \end{center}
+\caption{Influence of the composition of the library of templates in the step detection ($|\mathcal{P}|=10$, $\lambda=0.8$ and $\mu=0.15$). Average recall and precision on 100 simulations (with standard deviation). Class A: subjects who have no problem for walking. Class B:  subjects with severe pathologies that critically affect their locomotion. }\label{tab:walk_sd:influence_patho}
+\end{table}
+
+
+
+
+\subsection{Detailed results for the best simulation}
+\label{sub:walk_sd:best_simu}
+
+\begin{table*}[t]
+\begin{center}
+\begin{tabular}{|p{5em}||c|c||c|c||c|c|}
+\hline
+& \multicolumn{2}{c||}{Best simulation} & \multicolumn{2}{c||}{Pan-Tomkins} & \multicolumn{2}{c|}{One template}\\
+\hline
+\textbf{Group} & \textbf{Recall} & \textbf{Precision} &  \textbf{Recall} & \textbf{Precision} &  \textbf{Recall} & \textbf{Precision}\\
+\hline
+\hline
+Healthy subjects &98.93 (2.22) &  98.98 (2.43) &  99.14 (1.71) &  97.09 (3.60) & 99.03 (2.06) &  99.33 (1.76)\\
+\hline
+Orthopedic diseases & 97.54 (2.92) &  98.77 (2.12) & 98.78 (2.09) &  94.87 (5.09) & 97.37 (3.06) &  98.85 (2.23)\\
+\hline
+Neurological diseases & 98.55 (3.05) &  98.05 (3.02) & 96.80 (3.52) &  95.49 (4.55) & 98.11 (3.31) &  98.58 (2.55)\\
+\hline
+\hline
+\textbf{Total} & 98.40 (2.89) &  98.44 (2.72) & 97.82 (3.07) &  95.72 (4.56) & 98.15 (3.05) &  98.82 (2.33)\\
+\hline
+\end{tabular}            
+\caption{Detailed performances of the best step detection method ($|\mathcal{P}| = 5$, $\lambda=0.75$ and $\mu=0.1$), the best Pan-Tomkins method, and the best step detection method with one template ($|\mathcal{P}| = 1$, $\lambda=0.6$ and $\mu=0.15$). Means and standard deviations are displayed.} \label{tab:walk_sd:best_perf}
+\end{center}
+\end{table*}
+
+
+
+
+The best simulation on the whole grid search (21000 simulations) described in \autoref{sub:walk_sd:param} is using parameters $|\mathcal{P}| = 5$, $\lambda=0.75$ and $\mu=0.1$, with 98.40\% recall and 98.44\% precision. In this section, we propose a detailed study of this method. Note that  this particular method should only be seen as a good association (templates + $\lambda$ + $\mu$) performing well, and does not constitute a golden standard (similar scores are obtained on several other simulations).
+
+The detailed performances of this method on the whole database is presented on \autoref{tab:walk_sd:best_perf}: it is noticeable that scores are consistent on all groups of subjects. The best performances are obtained for healthy subjects, but there is no significant differences between the groups. This clearly shows that the method adapts well to different types of pathologies.
+
+Out of the 40344 detected steps, 85\% of them were detected with the Y-axis angular velocity, 2\% with the vertical acceleration and 13\% with Z-axis acceleration. This proportion can be due to the nature of the signals: medio-lateral angular velocity is actually known to be the direction in which there is the greatest quantity of movement during walking. This signal is often used in step detection \citep{salarian2004gait,ben2015comparison}, and it is likely that this component captures a locomotion pattern that is the most reproducible among the subjects.
+
+
+The good performances of this method are intuitively linked to the templates composing the library. It is remarkable that this method only requires a small number of templates, which tends to show that the algorithm do not need a large library to perform accurately. It probably rather needs a carefully selected set of templates, that are generic enough to fit the general shape of a step, but can also adapt to pathological steps. For instance, this library of 5 templates is composed as follows: 1 step belonging to an healthy subject, 3 steps corresponding to neurological diseases (2 with moderate troubles and 1 with severe troubles), and 1 step associated to orthopedic diseases (with moderate troubles). This covers all groups of subjects and the proportion of each group in the library is similar to the one of database. In particular, the neurological group is composed of many different diseases and it is likely that several patterns are necessary to accurately fit the whole range of step shapes.
+
+%  Out of the 46145 detected steps, 78\% are detected with neurological templates, 12\% with healthy templates and 10\% with orthopedic templates.
+
+In order to further investigate the accuracy of the method, some additional evaluation metrics are computed. For all correctly detected steps, we compute:
+\begin{itemize}
+ \item the difference between the detected start time and the annotated start time
+\item the difference between the detected end time and the annotated end time
+\item the difference between the duration of the detected step and the duration of the annotated step
+\end{itemize}
+The repartition of these metrics on all 39677 correctly detected steps are presented on \autoref{fig:walk_sd:newmetrics}. One interesting result is that our method does not introduce a bias: the median of the differences for all times (start, end, duration) is approximately equal to zero, and the quartiles are symmetric. This tend to prove that the library is able to accurately detect the step boundaries and to adapt to various step durations. For 90\% of the steps (represented as whiskers on the figure), the errors for start, end and duration times are lower than 0.25 seconds (in absolute value), which corresponds to 25 samples. These results are satisfactory when compared to the annotations uncertainties of experts and specialists (which are around 20 samples - see \autoref{sec:walk_sd:eval}). Outliers are in fact due to two specificities of the database: tiny steps (under 50 samples) mainly located during U-turn (causing underestimation for start times and overestimation of end and duration times), and highly 
+pathological steps for stroke subjects whose duration exceeds one second (causing upper outliers for start times and lower outliers on end and duration times). The method tested here is using five templates of durations 65, 76, 82, 86 and 105 samples and the detection is inevitably constrained by these step durations. While this phenomenon does not penalize the results on most steps, it is one limit of the algorithm especially with small libraries. Should these outliers become more frequent, one possible solution is to increase the number of templates and to add typical steps corresponding to these outliers within the library.
+
+
+
+
+
+
+
+\subsection{Comparison with the state-of-the-art}
+\label{sub:walk_sd:state}
+
+The reference procedure for step counting/detection is based on the Pan-Tomkins method \citep{pan1985real}. First intended for ECGs, it was  later adapted to detect steps in the vertical accelerometer signal \citep{ying2007automatic,libby2012simple,marschollek2008performance,thuer2008step}. It is composed of several successive signal processing steps, which are designed to emphasize the structure of the step, making it easier to detect. These steps can be summarized as:
+
+\begin{itemize}
+ \item Bandpass filtering (between $f_{min}$ and$ f_{max}$): removes the gravity component and the noise.
+  \item Derivation: amplifies the slope changes in the filtered signal. Whenever the foot rises from the ground or the heel hits the ground, the acceleration slope changes significantly and it translates into a burst in the filtered signal.
+  \item Squaring: makes all points positive and enhances the large values of the filtered signal.
+  \item Integration: the signal is smoothed using a moving-window integrator of length $N_{inte}$.
+  \item Peak search procedure: originally, \citet{pan1985real} used a threshold to find the phenomena they were looking for in the heart rate signal (every time the filtered signal was above the threshold, it was considered as detected). When they adapted the algorithm to the step detection problem, \citet{ying2007automatic} relied on the fact that the filtered signal showed great regularity: a small peak was always followed by a bigger one (respectively matching the foot lift and the heel strike). The time span of the second peak was defined as the peak-searching interval on the real acceleration signal. The maximum on that interval was considered a step.
+\end{itemize}
+
+Note that this step detection procedure only allows to detect steps but not to precisely know the start and end times of the step. Also, this method is not designed to perform properly during periods of no activity. We therefore added a post-processing step, which, once a step is detected, compares the standard deviation of a neighborhood around the detected peak to a noise level. The size of the neighborhood, as well as the noise level, are optimized by grid search so as to give the best performances.
+
+
+In \citet{ying2007automatic}, the parameters used are $f_{min}$ = 0 Hz, $f_{max}$ = 20 Hz, $N_{inte}$ = 0.1 s. The peak search procedure is performed sequentially: they select one peak every other peak, starting with the second one. With these parameters, we obtain of our database a recall of 99.53\% and a precision of 51.20\%. In fact, the peak-search procedure is not adapted and tend to detect several peaks within a step except of only one. This phenomenon has already been described by \citet{libby2012simple} and \citet{thuer2008step}.
+
+In order to objectively compare our method to the Pan-Tomkins, we therefore tested several values for  $f_{min}$, $f_{max}$ and $N_{inte}$, as well as a more relevant peak-search procedure, which only selects the local maxima among the detected peaks, thus preventing multiple detections. In total, 5 parameters need to be optimized by grid search (filter bandpass $\times$ 2, integration window, neighborhood size and noise level). When optimized on the whole database so as to maximize the F-measure, the algorithm gives a  97.82\% recall and a 95.72\% precision.  Detailed results are presented on \autoref{tab:walk_sd:best_perf}~: while these scores are comparable with our method on healthy subjects, it is noticeable that Pan-Tomkins method has difficulty to deal with neurological and orthopedics subjects. In particular, on these subjects, an overdetection occurs, thus decreasing the precision. One possible explanation is that signals associated to pathological subjects tend to have smaller amplitudes and to be noisier 
+that those belonging to healthy subjects. Thus, if the parameters of the filtering are inadapted, the preprocessing tends to increase the level of noise and to create artefacts that as misdetected as steps. This may be one limit of step detection methods based on signal processing: if the signals to be studied have different properties (noise, frequential content, amplitudes), it is tricky to find one unique processing adapted to all signals. This problem is overcome in template-based methods which inherently consider several models.
+
+
+
+%These values, while slightly better that ours, 
+% 
+% Since these results are obtained by optimizing 5 parameters on the whole database, which might be considered as overfitting, 
+% 
+% Also, this method does not provide step boundaries, while the method proposed article does. This is an useful feature, especially when the algorithm is  to be used in a medical context where step segmentation is a characteristic of interest.
+
+
+% \color{black}
+\section{Discussion and perspectives}
+\label{sec:walk_sd:discussion}
+
+
+The main idea behind the algorithm is that there is not one typical step but rather several typical steps. This assumption is confirmed by the results obtained with state-of-the-art methods, which inherently define only one model and obtain degraded performances when confronted to pathological data. To go further,  it is interesting to degrade the algorithm with only one template and look at the consequences on the results. A second grid search is conducted with the same parameters as in \autoref{sub:walk_sd:param}, but  considering libraries composed of one unique template.
+
+The best results are displayed on \autoref{tab:walk_sd:best_perf}. The metrics used in \autoref{sub:walk_sd:best_simu} are also evaluated for this simulation and presented on \autoref{fig:walk_sd:newmetrics-1pas}. Surprisingly, the precision and recall are comparable with those obtained with five templates. The template used for detection in this method belongs to an orthopaedic subject with moderate troubles and lasts 82 samples (which is close to the median step duration on the database which is equal to 77 samples). It seems that the task of step counting can be performed with only one template. However, it can be seen on \autoref{fig:walk_sd:newmetrics-1pas} that using only one template creates a bias and a systematic error on the estimation of end and duration times. Due to the large duration of the template used for detection, an overestimation of the duration often occurs.
+
+We believe this simulation shows that the use of a single template is adapted for step counting  on most subjects. The use of templates appears to give better performances than thresholding methods for step detection.  However, if additional information are desired (such as the start and end times of the steps), it is crucial to take into account the variability of the subjects and of their locomotion, which can be done by adding several templates that reflect the different step durations and shapes.
+
+Intuitively, the composition of the library is a fundamental feature of the algorithm. The choice of the templates to be used is an interesting question that can be answered in many different ways. In a medical context, templates can for example be introduced according to the characteristics and pathologies of the subjects to be studied: a neurologist may benefit from a library of templates composed of a selection of different neurological pathologies. They can also be specified by experts such as  biomechanists who can extract typical steps covering the whole range of types of locomotion. Unsupervised machine learning techniques (such as dictionary learning) can also be used to automatically extract typical steps that are found on several exercises. It is also relevant to test  semi-supervised techniques that could automatically choose the best library according to the input signal. All these leads are to be studied soon in collaboration with medical doctors and experts, and on more pathologies.
+
+
+
+\color{black}
+\section{Conclusion}
+
+We have described in this article a template-based method for step detection. This method, based on a greedy algorithm and a library of annotated step templates, achieves good and robust performances even with a small number of templates. When used on a large database composed of healthy and pathological subjects walking at different speeds, the method obtains  a 98\% recall and 98\% precision. Moreover, the algorithm allows to detect the start and end times of each step with a very good precision even on pathological subjects.
+
+Thanks to its robustness and low computational cost, this method could be extended to process signals acquired in free-living conditions. Indeed, the actual protocol is composed of a no activity period and a U-turn, and there is no obstacles for testing the algorithm on unconstrained walking. The algorithm may also be adapted to a lighter protocol using only waist accelerometer signals and based on the same principle.
+
+Another topic of interest is the choice of the templates to be used in the library (as presented in \autoref{sec:walk_sd:discussion}). Several selection processes could be implemented  in order to automatically adapt to any type of pathology and to optimize the performances of the algorithm.
+
+
+\section*{ACKNOWLEDGMENTs}
+
+The authors would like to thank N. Vayatis,  D. Ricard, A. Yelnik, C. De Waele and T. Gr{\'e}gory for the thorough discussions, the design of the experiment, the data acquisition and clinical annotation. This work was supported by SATT Ile-de-France Innov.
+
+
+\subfile{Misc/publications_step_detect}
+
+\stopcontents[chap7]
+
+\biblio{}
+\end{document}

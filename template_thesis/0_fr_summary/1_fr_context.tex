@@ -1,0 +1,439 @@
+\documentclass[../thesis.tex]{subfiles}
+
+\crossref{}
+
+\begin{document}
+\selectlanguage{french}
+
+\section[Motivations de la thèse: de la caractérisation à la compréhension]{%
+		 Motivations de la thèse: de la caractérisation\linebreak[1] à la compréhension%
+		\sectionmark{Motivations de la thèse}}
+\sectionmark{Motivations de la thèse}
+\label{sec:french:context}
+
+\subsection{L'acquisition en continu: le cas des signaux temporels}
+\label{sub:french:intro_ts}
+
+
+	%% Application
+	Au cours des dernières décennies, les capteurs suivant l'évolution de notre environnement,
+	de notre comportement ou de nos activités se sont multipliés. Sur internet, les
+	entreprises de publicité enregistrent les pages que nous visitons, le temps passé
+	sur celles-ci et même les mouvements de la souris dans la page. Dans les villes, des
+	capteurs sont installés pour enregistrer quantité d'information sur l'activité de la population
+	ou sur la qualité de l'air. Les badges de transport en commun permettent de suivre chaque
+	jour les trajets de millions de personnes. Les caméras de vidéo-surveillance enregistrent
+	en continu les flux de personnes et de vehicules dans les rues. Après acquisition, ces
+	informations sont enregistrées dans d'énormes bases de données à travers le monde. Cependant,
+	peu d'informations sont extraites de ces données, relativement à leur volume. Ces signaux qui
+	suivent l'évolution de notre vie quotidienne ne sont pas très bien compris. Pour la
+	vidéo-surveillance, des algorithmes extraient automatiquement les objets présents à l'image,
+	mais l'intervention humaine est nécessaire pour comprendre la scène et détecter les
+	dangers éventuels. Le traitement des signaux longs et multivariés est en effet une
+	tache complexe qui demande d'extraire les événements dans le temps, de caractériser
+	les comportements normaux et d'être capable de détecter les anomalies dans le signal.
+	L'étude des propriétés statistiques globales des données enregistrées n'est souvent
+	pas suffisante pour accéder à ce genre d'informations. La moyenne et la variance
+	des caractéristiques des séries temporelles ne permettent pas de distinguer des différences
+	fines dans le temps. Il est donc nécessaire de concevoir des outils statistiques avancés
+	pour l'étude de la structure temporelle des signaux. La conception de ces outils doit venir
+	d'un effort interdisciplinaire, afin de rassembler les compétences en apprentissage statistique,
+	en traitement du signal et en reconnaissance de motifs autour d'experts de ces signaux, des professionnels
+	du marketing aux climatologues, en passant par les médecins.
+
+
+	%% Medical cognac-G
+	Le domaine médical constitue un parfait exemple de milieu où la compréhension automatisée
+	de signaux pourrait changer la donne et mener à de nombreuses applications. La motricité
+	humaine est un processus très complexe, faisant intervenir de nombreux muscles qui doivent
+	se coordonner entre eux. Différentes pathologies peuvent avoir un impact sur la capacité
+	d'un patient à marcher. Les neurologues ou les spécialistes en ORL sont capables de détecter
+	et de distinguer à l'oeil nu des différences subtiles dans la démarche du patient. Les neurologues
+	peuvent en effet de diagnostiquer des neuropathies, tel le syndrome de Parkinson, en
+	regardant un patient marcher. Ils observent la démarche à différents niveaux, de l'aisance
+	globale du patient aux potentielles asymétries entre les côtés. Ensuite, ils regardent
+	l'évolution des pas au cours de l'exercice, pour détecter si le patient se fatigue. Cette
+	analyse permet d'extraire beaucoup d'informations qualitatives sur la condition du patient.
+	Avec l'expérience, les spécialistes sont capables de diagnostiquer très rapidement
+	les patients et de leur apporter les soins adéquats. Les capteurs inertiels permettent
+	aujourd'hui d'enregistrer la marche des patients en consultation. La quantification des
+	informations extraites par le docteur à partir de ces capteurs est un véritable challenge
+	qui pourrait, à terme, changer la manière dont sont suivis les malades. La première étape
+	pour s'attaquer à ce défi est de comprendre ces signaux. En effet, les intuitions
+	du médecin sur le patient se transposent rarement en une propriété du signal. Il est donc
+	nécessaire de pouvoir représenter le signal de manière interprétable, afin que les
+	experts puissent transposer leurs connaissances du phénomène sur des caractéristiques
+	du signal.
+
+
+	% Physiological signals and interpretability
+	Au cours de ma thèse, j'ai collaboré avec Cognac-G, une équipe de recherche regroupant
+	des chercheurs en apprentissage statistique et des chercheurs cliniciens, dans le but
+	de quantifier le comportement humain ou animal. Dans ce but, plusieurs protocoles ont
+	été définis, sur un large champs d'applications, de la respiration des souris ou la
+	locomotion humaine au mouvements des yeux chez le nourrisson. Ces protocoles doivent
+	permettre de quantifier objectivement les phénomènes d'intérêt grâce à des capteurs,
+	qui enregistrent des séries temporelles univariées ou multi-variées, aussi appelées
+	signaux physiologiques. Deux exemples connus de ce genre de signaux sont les
+	électrocardiogrammes (ECG) pour l'activité du coeur et les électroencéphalogrammes
+	(EEG) pour celle du cerveau. La premier défi de ces études réside dans l'extraction
+	des informations d'intérêt à partir de tels signaux, afin de les interpréter et de
+	comprendre les mécanismes biologiques, physiologiques ou biomécaniques qui les
+	produisent. Le second défi est d'automatiser ce processus de quantification afin
+	de développer des outils qui pourront être utilisés par les médecins pour le suivi
+	longitudinal et la comparaison entre leurs patients.
+
+	L'objectif de cette thèse est de concevoir et d'étudier des outils statistiques de
+	comparaison des séries temporelles capables de répondre à ces deux défis.
+
+
+
+% subsection intro_ts (end)
+
+
+
+\subsection[Comparer des signaux temporels: quantification des différences\\et interprétabilité]{%
+			Comparer des signaux temporels: quantification des différences et interprétabilité}
+\label{sub:french:ts_stat}
+
+
+\subsubsection{Absence de distance canonique entre signaux}
+\label{subs:french:no_dist}
+
+
+	Pour les données vectorielles, la plupart des distances utilisent des comparaisons
+	terme à terme entre les points, comme par exemple la distance euclidienne. Ces mesures
+	de similarité ne sont pas adaptées pour les signaux temporels, du fait de problèmes
+	d'alignement entre les échantillons temporels des différentes séries. Lorsque celles-ci ne sont
+	pas collectées dans un environnement extrêmement contrôlé, leur longueur et le décalage
+	qui peut exister entre elles peuvent beaucoup varier, ce qui rend difficile le problème
+	de recalage entre les séries.
+
+	% Comme indiqué précédemment, l'une des difficultés majeures pour calculer une distance
+	% entre les signaux est de trouver comment les aligner. Une autre manière de comparer
+	% les signaux est donc d'utiliser des distances vectorielles pour des signaux ré-alignés.
+
+	La technique de la déformation temporelle dynamique, en anglais \emph{Dynamique Time Wrapping} (DTW),
+	introduite par \citet{Sakoe1971} permet de calculer un alignement entre deux signaux. Elle est
+	basée sur la comparaison des différents échantillons temporels par une distance vectorielle.
+	L'avantage de cette distance est que les séries sont alignées automatiquement et qu'il est
+	possible de comparer des signaux de longueurs différentes. La DTW utilise la programmation
+	dynamique et les équations de \citet{Bellman1952} pour calculer l'alignement qui minimise
+	la distance entre les deux séries. Cet alignement est lié à une distance entre les signaux,
+	qui peut être utilisée pour étendre des méthodes vectorielles aux séries temporelles comme
+	les $k$ plus proches voisins ou le classifieur SVM. Des relaxations de la DTW basées sur
+	des modifications continues des équations de Bellman, appelées soft-DTW, ont été développées
+	pour définir des distances lissées \citep{Bahl1975} ou des noyaux \citep{Saigo2004}.
+
+
+	Cette classe de distance, basée sur le calcul d'un alignement entre les séries, est prometteuse
+	car elle permet de résoudre le problème de l'alignement et offre une grande flexibilité.
+	Cependant, le coût de calcul de la distance entre deux séries de longueur $T_1$ et $T_2$
+	est proportionnelle à leur produit $\bO{T_1T_2}$. Ces méthodes sont donc coûteuses
+	à utiliser pour des séries temporelles longues. Cette distance n'est pas non plus
+	différentiable, ce qui complique l'adaptation de la plupart des modèles vectoriels à
+	celle-ci. Sur ce dernier point, les résultats récents de \citet{Cuturi2017} ouvrent
+	de nouvelles pistes de recherche pour le traitement des signaux, en dérivant un algorithme
+	de complexité $\bO{T_1T_2}$ pour calculer la dérivée de la soft-DTW.
+
+
+	De plus, le fait de considérer des signaux longs comme des vecteurs les placent dans un espace
+	de très grande dimension. Or, lorsque la dimension croît, les distances terme à terme deviennent
+	moins discriminantes. Les distances entre les points se concentrent, de par l'effet moyennant
+	de la dimension. Il est donc nécessaire d'utiliser d'autres outils statistiques pour comparer
+	des signaux. Les méthodes les plus communes peuvent être classées entre les méthodes basées
+	sur l'extraction de propriétés, à partir de modèles, et les méthodes dites bout-à-bout. Nous
+	décrivons ci-dessous ces deux approches.
+
+% subsubsection ts:no_dist (end)
+
+\subsubsection{Modèles basées sur l'extraction de propriétés}
+\label{ssub:french:feat_comp}
+
+
+	Une approche pour la comparaison entre signaux est de comparer des
+	propriétés spécifiques extraites des signaux. Par exemple, la linéarité et la
+	périodicité d'un signal peuvent être quantifiées et utilisées pour déterminer à
+	quel point il est similaire à d'autres signaux. En utilisant ces propriétés globales,
+	une sinusoïde est plus proche d'une autre sinusoïde de fréquence proche que d'un
+	signal linéaire. La quantification de propriétés caractéristiques d'un signal peut
+	résulter de plusieurs modèles du signal, des outils du traitement du signal, comme
+	les coefficients de Fourier, jusqu'aux modèles de signaux statistiques tel que les
+	modèles ARMA. Ainsi, différentes propriétés du signal, ici appelées caractéristiques
+	(\emph{features} en anglais), peuvent être extraites et la distance entre deux
+	signaux est calculée en utilisant une distance terme-à-terme entre celles-ci.
+
+
+	Un des challenges de ce type de comparaison est la quantification automatisée des
+	caractéristiques pour un jeu de signaux. En effet, pour des signaux bruités ou des
+	signaux non stationnaires ou hétérogènes, l'estimation des coefficients de Fourier
+	ne donne pas des résultats stables et fiables. Il est souvent nécessaire d'utiliser
+	des méthodes plus complexes. Les outils de traitement du signal ne sont pas
+	conçus pour être utilisés sur des populations de signaux hétérogènes et beaucoup de
+	ces outils nécessitent de régler manuellement les paramètres pour fonctionner sur
+	tous les signaux du jeu de données. De même, pour les modèles de signaux statistiques,
+	l'estimation des paramètres peut aussi être instable lorsque certains signaux ne
+	vérifient pas les hypothèses du modèle. Cet effort d'automatisation de l'usage des
+	méthodes de traitement et de modélisation des signaux sort de leur cadre d'application
+	du fait des objectifs de généralisation et de robustesse que cela impose. L'adaptation
+	d'une seule de ces méthodes à un usage statistique demande une bonne connaissance de
+	celle-ci et des données sur lesquelles elle sera appliquée.
+
+
+	La nécessité de choisir \emph{a priori} les propriétés à inclure dans les comparaisons est
+	un autre inconvénient de ce type de méthode. Cette sélection doit être faite manuellement
+	et a un fort impact sur les performances des modèles qui les utilisent. Dans la plupart des
+	cas, les éléments de comparaison ne sont pas connus et doivent être conçus avec une méthode
+	essai/erreur pour capturer les propriétés adaptées au problème considéré. Ce processus,
+	appelé \emph{feature engineering}, est long et nécessite souvent les connaissances d'un
+	expert du type de données considéré pour avoir une intuition des caractéristiques d'intérêts.
+	Un exemple de ce processus est donné dans le domaine du traitement de l'image, avec les
+	descripteurs \emph{Scale-Invariant Feature Transform} (SIFT). Ces descripteurs, développés par
+	\cite{Lowe1999} pour capturer les variations locales d'intensité dans une image de manière
+	à être invariants aux rotations, aux translations et aux changements d'échelle, permettent
+	de comparer aisément des sous-parties du signal et ont été utilisés avec succès pour des
+	tâches de reconnaissance d'images. Ils ont ensuite été raffinés pendant près d'une décennie
+	pour diverses applications, afin d'améliorer les performances sur chacune des tâches. Cependant,
+	ces \emph{features} ne peuvent pas être utilisés pour d'autres applications avec des données
+	différentes comme les signaux audio. Et même pour les images, le choix de caractéristiques peut
+	dépendre de la tâche, et les descripteurs SIFT ne sont pas forcément les mieux adaptés.
+	La multiplication des applications et le besoin de résoudre plusieurs problèmes à la fois
+	rend le design de \emph{features} peu pratique.
+
+
+
+	Lorsqu'aucune information sur les propriétés d'intérêt n'est disponible, il est possible
+	d'utiliser une approche de \emph{bag of features}. Cette technique est inspirée du modèle
+	de sac de mots \citep{Harris1954}, utilisé en traitement du langage naturel (NLP) et a été
+	utilisée avec succès avec des images par \citet{Qiu2002}. L'idée est d'inclure dans le
+	modèle un large choix de caractéristiques communes et de procéder ensuite à une choix
+	des \emph{features} critiques pour le modèle avec des méthodes de sélection de variables
+	comme par exemple le LASSO \citep{Tibshirani1996} ou les méthodes de régression pénalisées
+	avec des normes structurées telles que le Group LASSO \citep{Yuan2006}. Cette étape de
+	sélection est cruciale pour garder une interprétabilité dans la comparaison. Elle permet
+	en effet de ne conserver que les propriétés jugées importantes par le modèle pour résoudre
+	la tâche.
+
+
+
+
+
+
+
+% subsubsection ts:feat_comp (end)
+
+\subsubsection{Modèles bout-à-bout}
+\label{ssub:french:endtoend}
+
+
+	Une autre approche efficace pour comparer des signaux est d'utiliser des méthodes dites
+	bout-à-bout, ou \emph{end-to-end} en anglais. Ces méthodes opèrent directement sur les signaux
+	bruts et intègrent une partie qui calcule pour chaque donnée d'entrée une
+	représentation interne, utilisée pour les comparaisons. Lors de la phase d'apprentissage,
+	la représentation est entraînée en même temps que le modèle statistique pour résoudre
+	la tâche. Les modèles bout-à-bout classiques sont les réseaux de neurones utilisés dans
+	l'apprentissage profond (\emph{cf.} \citealt{Goodfellow2016} et références associées).
+	Ces réseaux utilisent des représentations internes successives
+	des données pour extraire l'information, et la dernière couche utilise la représentation
+	finale pour résoudre la tâche considérée. Comme cette représentation est apprise en
+	simultané avec le solveur, elle est adaptée pour résoudre le problème. Un autre exemple
+	de technique bout-à-bout a été proposé par \citep{Mairal2012} avec l'apprentissage d'un
+	dictionnaire adapté à la tâche (en anglais \emph{task-driven dictionary learning}). Dans
+	leur article, les auteurs proposent d'apprendre une représentation des données, basée sur
+	l'apprentissage d'un dictionnaire, en même temps qu’un modèle pour résoudre une tâche
+	supervisée. Ce modèle est appris pour résoudre la tâche à partir de la représentation sur
+	le dictionnaire, et les deux parties sont apprises conjointement. Ceci permet d'adapter
+	la représentation des données au problème à résoudre, comme cela est fait dans le cas des
+	réseaux de neurones.
+
+
+	Ces méthodes diffèrent des techniques basées sur l'extraction de propriétés car les propriétés
+	comparées par les modèles bout-à-bout ne sont pas connues à priori mais apprises à partir des
+	données, en association avec la tâche à résoudre. Cette co-adaptation de la représentation
+	et du modèle statistique explique en grande partie le succès de ces méthodes. De plus, elles
+	permettent d'éviter la phase coûteuse d'automatisation de l'extraction de propriétés dans
+	les signaux, ce qui rend leur utilisation plus rapide et efficace. Cependant, le fait de ne
+	pas connaître les propriétés comparées rend ces modèles moins interprétables. L'interprétation
+	des représentations internes des réseaux de neurones est complexe. Cela rend la comparaison
+	entre les signaux plus opaque. Ce problème est moins important pour les algorithmes
+	d'apprentissage de dictionnaire. L'utilisation de la parcimonie dans leurs représentations
+	permet de donner du sens à l'information extraite en termes d'analyse de motifs. Ainsi, les
+	comparaisons qui utilisent ces représentations sont plus faciles à étudier.
+
+
+	Un autre inconvénient de ces techniques est qu'elles conduisent généralement à des problèmes
+	d'optimisation non convexes. Les propriétés
+	théoriques de ces modèles sont mal comprises et la convergence des algorithmes
+	d'apprentissage n'est pas garantie. En pratique, ces modèles peuvent être entraînés à
+	condition de disposer d'un jeu de données de très grande taille. En effet, contrairement
+	aux modèles	peu profonds, ces modèles nécessitent de grandes quantités de données pour
+	l'apprentissage, et ils ne sont pas robustes aux erreurs d'étiquetage. Le manque de
+	garanties théoriques pour ces modèles ne permet pas de quantifier ces besoins en
+	exemples d'entraînement et peut donc être un frein à leur utilisation.
+
+
+% subsubsection intro:endtoend (end)
+
+% subsection ts_stat (end)
+
+
+
+
+\subsection[Donner du sens: représentations prédéfinies et\\dictionnaires empiriques]{%
+			Donner du sens: représentations prédéfinies et\linebreak[1]dictionnaires empiriques}
+\label{sub:french:ts_rpz}
+
+
+	Une représentation est un moyen visuel de résumer un signal, dans le but de comprendre
+	ses propriétés. Pour les modèles basés sur l'extraction de propriétés comme pour les
+	modèles bout-à-bout, l'utilisation de représentations capables de mettre en avant les
+	principales différences entre des classes de signaux est fondamentale. En effet, des
+	représentations discriminantes permettent de sélectionner les caractéristiques utiles
+	à extraire pour la comparaison des signaux. Pour les modèles bout-à-bout, ces
+	représentations peuvent permettre d'interpréter le processus de décision. Nous décrivons
+	ci-dessous différentes méthodes de représentation des signaux temporels.
+
+
+\subsubsection{Représentations globales}
+
+\begin{figure}[tp]
+	\centering
+	\includegraphics[width=\textwidth]{intro_rpz/fourier_rpz}
+	\caption{Comparaison de trois signaux avec une représentation temporelle (\emph{gauche})
+	et une représentation de Fourier (\emph{droite}). Avec la représentation temporelle,
+	les signaux $X^{(2)}$ et $X^{(3)}$ semblent être plus proches mais dans le domaine
+	fréquentiel, $X^{(3)}$ est aussi proche de $X^{(1)}$ et l'on peut voir que le
+	troisième signal est la somme des deux premiers $X^{(3)} = X^{(1)} + X^{(2)}~.$}
+	\label{fig:french:fourier_rpz}
+\end{figure}
+
+	La représentation la plus commune est sans doute le tracé temporel des
+	valeurs prises par le signal. Ce genre de représentation est utile, car très
+	général, et l'on peut y détecter aisément certaines propriétés du signal, étant habitué
+	à voir ces tracés. En effet, nombre de ses caractéristiques sont reconnaissables avec
+	ces figures : la linéarité, la périodicité, la stationnarité, les formes récurrentes,
+	les artefacts ou les ruptures par exemple. Les experts ayant l'habitude de
+	ces visualisations peuvent en extraire des informations importantes, tels les cardiologues
+	capables de diagnostiquer des maladies cardiaques à partir de l'analyse des relevés
+	d'électrocardiogramme (ECG). Mais ces représentations canoniques
+	sont moins faciles à analyser lorsqu'il n'y a pas de motifs clairs dans le signal,
+	notamment en présence de bruit.
+	
+	Une autre représentation très commune des signaux
+	est leur spectre de Fourier. Cette représentation est liée aux propriétés harmoniques
+	du signal et atténue l'effet du bruit s'il est indépendant. La \autoref{fig:french:fourier_rpz}
+	présente un exemple de trois signaux représentés dans le domaine temporel et
+	dans le domaine fréquentiel de Fourier. Les deux signaux bruités $X^{(2)}$ et $X^{(3)}$
+	semblent très proches en utilisant la représentation temporelle mais la représentation
+	de Fourier montre que le signal $X^{(3)}$ a aussi une composante harmonique, de même
+	fréquence que celle de $X^{(1)}$. La représentation de Fourier, on peut
+	voir que le signal $X^{(3)}$ est la somme des signaux $X^{(1)}$ et $X^{(2)}$. Cet
+	exemple montre l'importance de sélectionner correctement la représentation utilisée
+	pour étudier des signaux, car celle-ci conditionne les propriétés des séries qu'il
+	est possible de comparer. Ces deux représentations permettent de mettre en avant
+	des caractéristiques globales des signaux et permettent donc de distinguer les
+	signaux de manière globale.
+
+
+
+\subsubsection{Extraire la structure locale}
+
+\begin{figure}[tp]
+	\centering
+	\includegraphics[width=\textwidth]{intro_rpz/stft}
+	\caption{Différentes représentations  pour le signal $X[t] = \sin((t+2)t/2)
+	+ \epsilon[t]$ avec $\epsilon$ un bruit blanc gaussien. (\emph{En haut à gauche}) représentation temporelle,
+	(\emph{en haut à droite}) représentation de Fourier et (\emph{en bas}) spectrogramme.
+	}
+	\label{fig:french:stft}
+\end{figure}
+
+	Pour les signaux non stationnaires ou bruités, les propriétés globales ne permettent
+	pas de distinctions précises entre les signaux et peuvent être difficiles à estimer.
+	Par exemple, l'estimation du spectre de Fourier sur l'ensemble d'un signal non
+	stationnaire n'est pas stable et il est compliqué d'extraire les harmoniques utiles.
+	Pour ces séries, les informations sont contenues dans les structures locales du
+	signal. L'extraction de ces structures ne peut se faire que par l'analyse locale
+	du signal. Une extension naturelle de la représentation de Fourier pour l'analyse
+	locale du signal a été proposée par \citet{Gabor1946}, puis développée avec la
+	transformée temps-fréquence (STFT). Cette analyse utilise la transformée de Fourier
+	sur des sous-fenêtres du signal de départ. L'information n'est pas agrégée globalement
+	mais présentée en fonction du temps et de la fréquence, ce qui permet de révéler les
+	transitions dans le signal. La \autoref{fig:french:stft} montre que cette représentation
+	met en valeur des variations de la fréquence au cours du temps qui ne sont pas visibles
+	avec des représentations globales. L'utilisation de méthodes globales sur des sous-portions
+	du signal est une méthode populaire de représentation des signaux. Par exemple, les
+	approximations linéaires par morceaux quantifient la linéarité de sous-segments du signal
+	et réduise sa complexité (\emph{cf.} \citealt{Keogh2001} et références associées). La
+	transformée en ondelettes est un autre exemple de représentation pour la structure locale
+	du signal. L'analyse en ondelettes la plus courante représente le signal de manière
+	parcimonieuse, en concentrant l'information autour des discontinuités (\emph{cf.}
+	\citealt{Mallat2008} et références associées). Le caractère multi-échelle de cette
+	transformée permet de plus de mettre en avant des phénomènes de durée différente.
+	Une version multi-couche de cette transformée a été proposé avec la transformée
+	\emph{scattering} \citep{Mallat2012}. Cependant, toutes ces représentations analysent
+	des propriétés spécifiques du signal, connues à priori. L'analyse de Fourier révèle
+	les propriétés harmoniques du signal, tandis que les approximations linéaires par
+	morceaux quantifient sa linéarité. Lorsque l'on ne connaît rien de la structure du
+	signal, la recherche d'une représentation discriminante doit être faite par tâtonnement.
+
+
+\subsubsection{Représentation par motifs}
+
+
+	Pour les signaux dont on ne connaît pas la structure, l'adaptabilité de la méthode
+	de représentation est cruciale. Une idée pour résumer un signal est d'extraire
+	automatiquement les motifs récurrents dans ce signal. Les caractéristiques des
+	structures locales sont alors apprises directement à partir des données, ce qui
+	permet d'extraire des structures non-analytiques et non-connues \emph{a priori}.
+	Ces structures locales sont appelées motifs, en anglais \emph{patterns}. Les représentations
+	basées sur les motifs ont d'abord été développées pour les données vectorielles comme un
+	moyen de réduire la variabilité des points et de réduire le bruit. \citet{hotelling1933analysis}
+	a proposé l'Analyse en Composantes Principales pour calculer les vecteurs
+	qui expliquent le plus de variance possible dans les données observées. Ces
+	composantes principales peuvent être vues comme des vecteurs qui représentent les
+	motifs typiques dans les données. Une autre représentation vectorielle basée sur
+	les motifs est l'algorithme de $K$-moyennes \citep{Macqueen1967}. Cette méthode
+	assigne chaque point du jeu de données à un des $K$ groupes de points et les points
+	sont ensuite représentés par le barycentre de tous les éléments du groupe auquel
+	ils appartiennent. Beaucoup d'autres techniques de réduction de dimension peuvent
+	ainsi être analysées comme des techniques de représentation basées sur des motifs,
+	notamment l'analyse en composantes indépendantes (ICA, \citealt{Jutten1991}), ou la
+	factorisation de matrice positive (NMF, \citealt{Paatero1994}). \citet{Olshausen1997}
+	ont proposé l'apprentissage de dictionnaires parcimonieux, qui apprend des motifs,
+	appelés atomes d'un dictionnaire, à partir des données et les utilise pour encoder
+	les signaux originaux. Cette méthode est un cadre très général pour l'apprentissage
+	de motifs et peut être étendue aux signaux temporels.
+
+
+	Pour les signaux temporels, les motifs sont des sous-signaux typiques, qui peuvent
+	être répétés dans le temps. La série peut alors être encodée par un signal d'activation
+	de ces \emph{patterns}, séparant ainsi les variations de la série et leur localisation dans le
+	temps \citep{Vautard1989, Grosse2007}. Le fait que seul un nombre limité de motifs
+	soit utilisé permet de réduire
+	la complexité de la représentation et l'utilisation d'activations parcimonieuses permet
+	la localisation dans le temps de ces variations. Ce type de représentation est très
+	naturel dans le contexte des signaux physiologiques comme les ECG, EEG, les mouvements
+	des yeux ou l'accélération verticale du pied pendant la marche, comme présenté dans
+	la \autoref{fig:french:walk_pattern}. Ces méthodes pour extraire des motifs des signaux
+	ont été introduites en utilisant les intuitions provenant de l'apprentissage de dictionnaire
+	pour des données vectorielles. Bien qu'elles n'aient pas fait l'objet de beaucoup d'études,
+	ces méthodes ont montré de bons résultats sur des applications en traitement d'images et
+	de la parole, du fait de leur adaptabilité et de leur interprétabilité. Le choix du design
+	du dictionnaire permet de changer la taille et l'échelle des atomes, les variations de
+	résolution permettent d'accéder à différents niveaux du signal. Une propriété très importante
+	de ces représentations est la séparation entre les motifs et leur localisation dans le
+	temps. La \autoref{fig:french:walk_pattern} montre qu'il est plus facile d'étudier la régularité
+	des pas à partir du signal d'activation en rouge pointillé qu'à partir du signal original
+	en bleu, comme les variations sont résumées par un pattern unique, et les petites
+	perturbations autour de ce pattern sont abandonnées.
+
+
+
+% section intro:ts_rpz (end)
+
+
+\selectlanguage{british}
+
+\biblio{}
+\end{document}

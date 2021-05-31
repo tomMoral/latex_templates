@@ -1,0 +1,74 @@
+TODO
+-----
+
+  - [x] Intro incister sur contrib
+  - [x] Resumé en français 5 pages.... :)
+  - [x] Resumé en français 20 pages.... :(
+  - [x] sync resume/intro for TS comp
+  - [x] Translate contrib 4 pages
+  - [x] Intro generale/contrib 4 pages
+  - [x] Abstracts
+  - [ ] Notation
+  - [ ] Acknowledgement
+  - Intro:
+    - [x] Contextualize
+    - [x] Issues with time series
+    - [x] Extend thesis plan
+    - [x] Contrib
+    - [x] Contrib itemized?
+    - [x] Contrib signals physio
+  - Intro part I:
+    - [x] Intro chapter
+    - [x] Figure2.1: axis
+    - [x] CDL model: theory
+    - [x] FSS: windowed FSS
+    - [x] ADMM: Update
+    - [x] ADMM: Update multiplier
+    - [x] ADMM: convergence
+    - [x] CD: computation gradient with auxillary variable
+    - [x] ADMM: dict update
+    - [x] Dictionary update: possible constraints
+    - [x] BCD: L_k definition
+    - [-] Model: z penalty and Group Lasso
+    - [x] Alt min: Task driven dictionary learning ?
+  - SSA:
+    - [x] Comment figure3.1
+    - [x] Periodogram auto grouping and below
+    - [x] HGS similarity
+    - [x] KM similarity
+    - [-] Numeric discussion
+    - [x] Discussion
+  - DICOD:
+    - [x] Explain different distributed algorithm
+    - [x] Derive a locally-greedy algorithm
+    - [x] Randomized coordinate descent
+    - [x] Better description for the speed up
+  - Intro part II:
+    - [x] Convolutional layers
+    - [x] Adam
+    - [x] Adagrad/Rmsprop
+    - [x] Error decomposition
+    - [x] Improve Error decomposition
+    - [x] Better intro variance reduction method
+    - [x] Intro chapter state of the art
+    - [ ] Verify the theoretical work
+  - Post-training:
+    - [x] Re-write Intro
+    - [x] Link to rpz
+    - [x] Figure7.1/7.2
+    - [x] /!\ not significant
+  - LISTA:
+    - [x] Intro
+    - [x] LASSO \neq ConvLASSO
+    - [x] Gap
+  - Part III
+  - Walk:
+    - [x] Add experiments with CDL
+  - Gaze:
+    - [x] Chapeau with SSA
+    - [x] Drop article matthieu
+  - Conclusions
+    - [-] Conclusion part I
+    - [-] Conclusion part II
+      - [x] Link adaptive optim and representation
+    - [x] Conclusion Thesis

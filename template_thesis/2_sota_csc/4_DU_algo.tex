@@ -1,0 +1,311 @@
+\documentclass[../thesis.tex]{subfiles}
+\crossref{}
+\begin{document}
+\def\sbiblio{}
+
+
+\section{Dictionary updates}
+\label{sec:dict_update}
+
+
+
+\begin{table}[t]
+    \centering
+	\begin{tabular}{|c | c | c |}\hline
+		Methods & {Original paper} & Dictionary adapation\\\hline
+		\hyperref[sub:du_pgd]{APGD} & \citealt{Nesterov1983} & \citealt{Kavukcuoglu2013} \\\hline
+		\hyperref[sub:block_cd]{Block CD} & \citealt{Luo1993} & \citealt{Mairal2010}\\\hline
+		\hyperref[sub:du:ksvd]{K-SVD} & \citealt{Aharon2006} & \citealt{Yellin2017} \\\hline
+		\hyperref[sub:du_admm]{ADMM} & \citealt{Gabay1976} & \citealt{Bristow2013} \\\hline
+	\end{tabular}
+	\caption{
+	Algorithms for dictionary update}
+\label{tab:du:update_methods}
+\end{table}
+
+
+
+	Let $\left(X^{[1]}, \dots, X^{[N]}\right)$ be a set of signals in $\Xset_T^P$
+	and $\left(Z^{[1]}, \dots, Z^{[N]}\right)$  the associated convolutional sparse codes.
+	The problem of learning a dictionary on this data set is posed using the following
+	minimization problem,
+	\begin{equation}
+		\label{eq:dict_update}
+		\pmb D^* = \argmin_{\pmb D_k \in \Omega}
+			\underbrace{\frac{1}{N}\sum_{n=1}^N\frac{1}{2} \left\|X^{[n]} - \sum_{k=1}^KZ^{[n]}_k* \pmb D_k\right\|_2^2
+					    }_{G_N(\pmb D)},
+	\end{equation}
+	for a given constraint set $\Omega$. Conversely to the sparse coding, here
+	the codes are fixed and we update the dictionary elements. The most common constraint
+	imposed on the dictionary atoms is to have a unit norm. Indeed, scaling $\pmb D$ by
+	$\alpha$ and $Z$ by $1/\alpha$, for $\alpha > 1$, does not change the reconstruction
+	cost but the $\ell_1$-norm is decreased by a factor $1/\alpha~.$ Thus, without the unit
+	norm constraint, $Z$ tends to 0 and the norm of the atoms explodes. Other constraints
+	have also been proposed, such as smoothness constraints enforced by regularizing the
+	gradient with its $\ell_2$-norm. Problem \autoref{eq:dict_update} is smooth and
+	convex if $\Omega$ is convex. \autoref{tab:du:update_methods} summarize three algorithms
+	usually used to compute $\pmb D^*$.
+
+\subsection{Proximal Gradient Descent}
+\label{sub:du_pgd}
+
+
+\begin{algorithm}[tp]
+	\caption{Proximal Gradient Descent}
+	\label{alg:pgd}
+	\begin{algorithmic}[1]
+		\STATE \textbf{Input: } initial dictionary $\pmb D^{(0)}$,
+							 regularization parameter $\lambda$, signals $X, Z$
+							 and tolerance $\epsilon$
+		\REPEAT
+		\STATE $\displaystyle \pmb D' = \pmb D^{(q)} - \frac{1}{L}\nabla G_N(\pmb D^{(q)})$
+		\COMMENT {Gradient step}
+		\STATE $\displaystyle \pmb D^{(q+1)} = \text{proj}_\Omega(\pmb D')$
+		\COMMENT {Proximal operator}
+		\UNTIL{$\max_{k, t \in \mathcal C} |\pmb D^{(q+1)}_k[t] - \pmb D^{(q)}_k[t]| < \epsilon$}\vskip.3em
+		\STATE \textbf{Return}: $\pmb D^{(q)}$
+	\end{algorithmic}
+\end{algorithm}
+
+	If $\Omega$ is convex, it is possible to solve \autoref{eq:dict_update} using a proximal
+	gradient descent. Indeed, if $\mathcal I_\Omega$ denotes the indicator function of the
+	constraint set $\Omega$, \autoref{eq:dict_update} is equivalent to
+	\[
+		\argmin_{D_k} ~~ G_N(\pmb D)  + \mathcal I_\Omega(\pmb D)
+	\]
+	The proximal operator of $\mathcal I_\Omega$ is the projector proj$_\Omega$ on
+	$\Omega$. If $\Omega$ is the unit ball, this proximal operator is separable for
+	each atom and can be computed using the following close form,
+	\[
+		\text{proj}_\Omega(\pmb D_k) = \frac{\pmb D_k}{\max\left(\|\pmb D_k\|_2, 1\right)}~.
+	\]
+	The proximal gradient descent is recalled in \autoref{alg:pgd}. At each iteration,
+	a gradient step is performed for the smooth and convex function $G_N$. Then, we use
+	the proximal operator of $\mathcal I_\Omega$ to compute the next point.
+
+
+\begin{algorithm}[hp]
+	\caption{Accelerated Proximal Gradient Descent}
+	\label{alg:du:apgd}
+	\begin{algorithmic}[1]
+		\STATE \textbf{Input: } initial dictionary $\pmb D^{(0)}$, regularization parameter $\lambda$,\\
+							 signals $X, Z$ and tolerance $\epsilon$
+		\STATE \textbf{Initialize: } $A^{(0)} = \pmb D^{(0)}$ and $\gamma^{(0)} = 1$
+		\REPEAT
+		\STATE \textbf{Gradient step:}
+		\[
+			\pmb D^{(q+1)} = \text{proj}_\Omega(\pmb A^{(q)} - \frac{1}{L}\nabla G_N(\pmb A^{(q)}))
+		\]
+
+		\STATE Update momentum coefficient
+			$\displaystyle \gamma^{(q+1)} = \frac{1 + \sqrt{1 + 4{\gamma^{(q)}}^2}}{2}$
+		\STATE \textbf{Nesterov momentum step:}
+		\[
+			\pmb A^{(q+1)} =  \pmb D^{(q+1)} + \frac{\gamma^{(q) }- 1}{\gamma^{(q+1)}}
+											   \left(\pmb D^{(q+1)} - \pmb D^{(q)}\right)
+		\]
+		\UNTIL{$\max_{k, t \in \mathcal C} |\pmb D^{(q+1)}_k[t] - \pmb D^{(q)}_k[t]| < \epsilon$}\vskip.3em
+		\STATE \textbf{Return}: $\pmb D^{(q)}$
+	\end{algorithmic}
+\end{algorithm}
+
+
+
+	Like ISTA, this algorithm can be accelerated using the Nesterov momentum (as described in
+	\autoref{sub:fista}). \autoref{alg:du:apgd} summarizes the Accelerated Proximal Gradient
+	Descent (APGD). This acceleration uses an auxiliary point ${\pmb A}$ computed by
+	continuing in the direction of the update between two iterations.
+% subsection du:pgd (end)
+
+
+\subsection{Block coordinate Descent}
+\label{sub:block_cd}
+
+	\citet{Mairal2010} proposed another algorithm to solve \autoref{eq:dict_update} based
+	on the block coordinate descent. The block coordinate descent updates at each iteration
+	one of the dictionary atoms to minimize the objective function relatively to this element
+	with all the other fixed. The atoms are updated using the coordinate-wise
+	proximal gradient descent step. The main difference with \autoref{alg:pgd} is that it is
+	only necessary to compute the gradient for one atom at a time, making the iteration more
+	efficient. The proposed method uses cyclic updates for the atoms but can easily be extended
+	to randomly choose the atom. \autoref{alg:block_cd} describe the algorithm.	
+
+	An important observation for this algorithm is the method to compute the coordinate-wise
+	gradient. The gradient of $G_N$ can be easily computed when using these two constants
+	\begin{equation}
+		\label{eq:dict_AB}
+		\begin{split}
+			A_{k, l}[t] = & \frac{1}{N} \sum_{n=1}^N \left(\widetilde Z^{[n]}_k*Z^{[n]}_l\right)[t]\\
+			B_k[t] = &  \frac{1}{N}\sum_{n=1}^N \left(\widetilde Z^{[n]}_k*X^{[n]}\right)[t]\\
+		\end{split}
+		\hskip4em  \forall t\in \llbracket -(W-1), W-1\rrbracket
+	\end{equation}
+	These two constants are simply the sum of the auto-correlation and cross-correlation
+	of $X$ and $Z$, for a given shift $t$. Using this constants, it is possible to compute
+	the gradient without using the signals $Z$ and $X$, \ie{}
+	\begin{equation}
+		\label{eq:block_cd}
+		\nabla G_N(\pmb D)_k[t] = B_k[t] - \sum_{l=1}^K
+					\left(A_{k, l}* \pmb D_l\right)[t]~.
+	\end{equation}
+
+
+	\begin{algorithm}[tp]
+		\caption{Block Coordinate Descent}
+		\label{alg:block_cd}
+		\begin{algorithmic}[1]
+			\STATE \textbf{Input: } initial dictionary $\pmb D^{(0)}$,
+				   signals $A$ and $B$ defined in \autoref{eq:dict_AB}
+				   and tolerance $\epsilon$
+			\STATE Pre-compute $L_k = A_{k, k}[0]$
+			\REPEAT
+			\FOR{k = 1 \dots K}
+			\STATE Compute $\displaystyle \frac{1}{L_k}\nabla G_N(\pmb D^{(q)})_k$ using \autoref{eq:block_cd}
+			\STATE $\displaystyle \pmb D'_k[t] = \pmb D^{(q)}_k[t] - \frac{1}{L_k}\nabla G_N(\pmb D^{(q)})_k[t]$
+			\COMMENT {Gradient step on coordinate $k$}
+			\STATE $\displaystyle \pmb D^{(q+1)}_k = \text{proj}_\Omega(\pmb D'_k)$
+			\COMMENT {Proximal operator for $\pmb D'_k$ }
+			\ENDFOR
+			\UNTIL{$\max_{k, t \in \mathcal C} |\pmb D^{(q+1)}_k[t] - \pmb D^{(q)}_k[t]| < \epsilon$}\vskip.3em
+			\STATE \textbf{Return}: $\pmb D^{(q)}$
+		\end{algorithmic}
+	\end{algorithm}
+
+% subsection block_cd (end)
+
+\subsection{K-SVD}
+\label{sub:du:ksvd}
+
+	When the constraint set $\Omega$ is the $\ell_2$ ball, it is possible to compute
+	the dictionary updates using the K-SVD algorithm. In their paper, \citet{Aharon2006}
+	propose a technique based on the computation of $K$ Singular Value Decomposition to
+	update the dictionary. This algorithm can be seen as an extension of the K-Means algorithm
+	and it has been adapted for convolutional dictionary learning in \citet{Yellin2017}.
+	For each dictionary element $\pmb D_k$, the residual signal
+	\[
+		R_k^{[n]} = X^{[n]} - \sum_{\substack{l=1\\l\neq k}}^K \pmb D_l * Z_l^{[n]}
+	\]
+	is computed without the atom $\pmb D_k$. Using this notation, the problem of minimizing
+	$G_N$ with respect to $\pmb D_k$ can be re-written as
+	\[
+		\argmin_{\|\pmb D_k\|_2 = 1} \frac{1}{N} \sum_{n=1}^N
+			\left\| R_k^{[n]} - \pmb D_k * Z_k^{[n]}\right\|_2^2
+	\]
+	The idea in K-SVD is to use the fixed support of $Z_k^{[n]}$ and to solve this problem using
+	the SVD. To that purpose, we select the segments in the residuals which are activated in
+	the signals $Z^{[n]}_k$, \ie{} the segment $(R_k^{[n]}[t], \dots R_k^{[n]}[t+W-1])$ for
+	$(t, n) \in \llbracket0, L-1\rrbracket \times \llbracket 1, N\rrbracket$
+	such that $Z^{[n]}_k[t] \neq 0$. All these segments are used to create a matrix $A_k$ where
+	each line is one of the segment. Then, the first singular vectors $(u, v)$ of $A_k$ are computed
+	using the SVD of $A_k$ and the value of $\pmb D_k$ can be updated to $v$. Note that the
+	value of $u$ can also be used to update the non-zero values of $Z_k$. The algorithm is
+	summarized in \autoref{alg:ksvd}.
+	
+	One advantage of this method is that the dictionary can be updated simultaneously with the
+	non-zero coefficients of $Z$. This ensures that the cost function can only decrease when
+	using an $\ell_0$ penalization of the coding signal. For the $\ell_1$-norm, this property
+	is not verified anymore, but the sparsity of the activation vectors cannot be reduced.
+	
+
+	\begin{algorithm}[tp]
+		\caption{K-SVD}
+		\label{alg:ksvd}
+		\begin{algorithmic}[1]
+			\STATE \textbf{Input: } estimate of the sparse code $Z$, initial dictionary $\pmb D^{(0)}$
+			\STATE Initialize $\pmb D$ to $0$  
+			\FOR{k = 1 \dots K}
+			\STATE Compute $\displaystyle R_k = X - \sum_{\substack{l=1\\l\neq k}}^K \pmb D^{(0)}_l * Z_l$.
+			\STATE For $t \in \llbracket0, L-1\rrbracket$ such that $Z_k[t] \neq 0$,\\
+					collect the sub-series $(R_k[t], \dots, R_k[t+W-1])$ in a matrix $A_k$. 
+	such that $Z_k[t] \neq 0$,
+			\STATE Compute the first singular vectors $(u, v)$ of $A_k$
+			\STATE Set $\pmb D_k = v$
+			\ENDFOR
+			\STATE \textbf{Return}: $\pmb D$
+		\end{algorithmic}
+	\end{algorithm}
+	  
+
+% subsection du:ksvd (end)
+
+
+\subsection{Alternate Direction Method of Multiplier (ADMM)}
+\label{sub:du_admm}
+	Finally, \citet{Bristow2013} proposed a method for the dictionary updates based on
+	the ADMM. The basic idea behind this method is to split the cost function between two
+	variables and to constrain these variables to be equal as described in \autoref{sub:admm}.
+	For problem \autoref{eq:dict_update}, this gives
+	\begin{equation}
+		\label{eq:dict_admm}
+		\argmin_{\pmb D = \pmb D'} G_N(\pmb D) + \mathcal I_\Omega(\pmb D')
+	\end{equation}
+	The augmented Lagrangian of \autoref{eq:dict_admm} is 
+	\[
+		\mathcal L(\pmb D, \pmb D', \Theta_d, \mu_d) = G_N(\pmb D) + \mathcal I_\Omega(\pmb D')
+			+ \Theta_d\tran(\pmb D - \pmb D') + \mu_d\|\pmb D - \pmb D' + \Theta_d\|_2^2
+	\]
+	Then, the ADMM algorithm optimizes $\mathcal L$ for each variable iteratively. In
+	the case of \autoref{eq:dict_update}, the following updates are performed, 
+	\begin{align}
+		\label{eq:du:admm:d_update}
+		\pmb D^{(q+1)} & = \argmin_{\pmb D} G_N(\pmb D) + \mu_d\left\|\pmb D - \pmb D'^{(q)} + \frac{\Theta_d^{(q)}}{\mu_d}\right\|_2^2\\
+		\label{eq:admm5}
+		\pmb D'^{(q+1)} & = \text{proj}_\Omega \left( \pmb D^{(q+1)} + \frac{\Theta_d^{(q)}}{\mu_d}\right)\\
+		\label{eq:admm6}
+		\Theta_d^{(q+1)} & = \Theta_d^{(q)} + \pmb D^{(q+1)} - \pmb D'^{(q+1)}
+	\end{align}
+	As for the convolutional sparse coding, the update \autoref{eq:du:admm:d_update} is
+	the most expensive to compute. Using the same idea as for the computation of the 
+	of the updates of $Z$ in \autoref{eq:sc:admm:z_update}, we can use Fourier domain
+	to show that $\pmb D^{(q+1)}$ is the inverse Fourier transform of the solution
+	$\widehat {\pmb D}^{(q+1)}$ of the linear system
+	\[
+		\left(\sum_{n=1}^N \widehat Z^{[n]}[l]^H\widehat Z^{[n]}[l] + \mu_d\pmb I_K\right) \widehat {\pmb D}[l]
+			= \left(\sum_{n=1}^N \widehat Z^{[n]}[l]^H\widehat X^{[n]}[l] +
+					\mu_d\widehat {\pmb D'}[l] + \widehat \Theta_d[l]\right)~,
+	\]
+	for $l$ in $\llbracket 0, T/2 \rrbracket$ and for Fourier Transforms computed with
+	zero-padding to length $T$ of $Z$ and $\pmb D_k$. As $\pmb D'$ is projected on the
+	constraint set, it is the one which should be returned at the end of the algorithm.
+	
+	
+	\begin{algorithm}[tp]
+		\caption{ADMM for dictionary update}
+		\label{alg:admm_du}
+		\begin{algorithmic}[1]
+			\STATE \textbf{Input: } initial dictionary $\pmb D^{(0)}$, signal $X^{[n]}$ and $Z^{[n]}$,
+					parameter $\mu_d$ and tolerance $\epsilon$ 
+			\STATE Initialize $\Theta_d^{(0)}$ to 0 and $\pmb D'^{(0)} = \pmb D^{(0)}$ 
+			\REPEAT
+			\STATE Compute $\pmb D^{(q+1)}$ with \autoref{eq:du:admm:d_update}
+			\STATE Compute $\pmb D'^{(q+1)}$ with \autoref{eq:admm5} 
+			\STATE Compute $\Theta_d^{(q+1)}$ with \autoref{eq:admm6} 
+			
+			\UNTIL{$ \max\left(\|\pmb D^{(q+1)} + \pmb D'^{(q+1)} - C\|_2, 
+							   \|\pmb D^{(q+1)} - \pmb D^{(q)})\|_2\right) < \epsilon$}
+			\STATE \textbf{Return}: $\pmb D'^{(q)}$
+		\end{algorithmic}
+	\end{algorithm}
+	
+	One advantage of this algorithm is that it is easy to use with \autoref{alg:admm}.
+	Indeed, the ADMM algorithm can be used for the full dictionary learning problem
+	\autoref{eq:dict_learn}. The updates are performed following the equations
+	\autoref{eq:admm1},\autoref{eq:admm2}, \autoref{eq:sc:admm:z_update}, \autoref{eq:du:admm:d_update},
+	\autoref{eq:admm5} and \autoref{eq:admm6} sequentially. This algorithm can be
+	reduced to using one iteration of \autoref{alg:admm_sc} followed by one iteration
+	of \autoref{alg:admm_du}.
+	
+	
+
+% subsection dict_admm (end)
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\biblio{}
+\end{document}

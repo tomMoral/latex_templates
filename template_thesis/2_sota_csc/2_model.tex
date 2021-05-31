@@ -1,0 +1,261 @@
+\documentclass[../thesis.tex]{subfiles}
+\crossref{}
+\begin{document}
+
+
+
+\section{Convolutional Representation} 
+\label{sec:conv_DL_model}
+
+	The convolutional representation is an efficient and adaptive
+	model to describe the patterns composing a signal. Consider the $P$-dimensional
+	signal $X \in \Xset_T^P$ of length $T$.	Let $\pmb D = \left \{ {\pmb D}_k \right \}_{k=1}^K
+	\subset \Xset_W^P$ be a set of $K$ multivariate patterns of length $W \ll T$
+	with the same dimension $P$ and $\left \{ Z_k \right \}_{k=1}^K \subset
+	\Xset_L^1$ be a set of $K$ scalar activation signals with length
+	$\smeq L = T-W+1$~. We denote $Z \in \Xset_L^K$ the $K$-dimensional signal
+	of length $L$ such that
+	\[
+		Z[t] = \begin{pmatrix} Z_1[t]\\\dots\\Z_K[t] \end{pmatrix}~.
+	\]
+
+	\begin{restatable}{definition}{ConvRpz}
+	\label{def:conv_rpz}
+		The convolutional representation models a multivariate signal $X$ as the sum of
+		$K$ convolutions between a multivariate pattern $D_k \in \Xset_W^P$ and an
+		activation signal $Z_k \in \Xset_L$
+		such that:
+		\begin{equation}
+		\label{eq:model}
+			X[t] =  \sum_{k=1}^K (Z_k*{\pmb D}_{k})[t] +\mathcal{E}[t],
+			~~~~~~~\forall t\in \llbracket 0, T-1\rrbracket~.
+		\end{equation}
+		with $\mathcal{E} \in \Xset_T^P$ representing an additive noise signal
+		with the same length and dimension as $X$.
+	\end{restatable}
+
+	A univariate signal generated
+	using this model is presented in \autoref{fig:model}. This kind of model
+	has first been introduced by \citet{Grosse2007}, who showed this method
+	can be useful for audio signal comparison.
+
+
+
+\begin{figure}[htp]
+\centering
+\includegraphics[width=\textwidth]{intro_rpz/CSC}
+\caption{Representation of a scalar signal $X$ generated from one dictionary
+element $D_1$ and the coding signal $Z_1$ using the model \autoref{eq:model}.
+The pattern $D_1$ is repeated at different time locations with different activation
+intensities in the signal. The coding signal $Z_1$ captures the apparitions of
+the pattern $D_1$ in all possible shifted time locations.}
+\label{fig:model}
+\end{figure}
+
+
+\paragraph{A shift Invariant Model.}
+\label{par:shift_inv}
+
+	This model is well suited for time series studies as it captures the
+	patterns in a shift-invariant way. Indeed, with the convolution operator,
+	the presence of the $k$-th pattern ${\pmb D}_k$ at any time in the signal is encoded
+	in the activation signal $Z_k$. Using the code signals, it is easy to study
+	the regularity of a pattern occurrence or the correlation between patterns.
+	The representation based on model \autoref{eq:model} is particularly useful
+	to separate the localization of the patterns, encoded in the activation signal
+	$Z$, and their shapes captured in $\pmb D$. The search for patterns shorter
+	than the signal permits to compare easily the representation of signals with
+	different lengths as it focuses on local structures in the signal.
+
+% paragraph shift_inv (end)
+
+\paragraph{Higher Order Extension.}
+\label{par:extension}
+	Note that this model can be extended to higher order signals such as images by
+	using the proper convolution operator. In this thesis, the focus is set on
+	1D-convolution due to the application domain, with temporal physiological signals.
+	Most of the algorithms described here can be easily adapted using 2D-convolutions
+	and the focus of many works on convolutional dictionary learning was the image
+	processing \citep{Bristow2013,Chalasani2013, Kavukcuoglu2013}.
+
+
+
+\subsection{Interpretability of the Dictionary}
+\label{sub:chose_dict}
+
+	The choice of dictionary to encode the signal is critical as it conditions
+	the interpretability of the coding signal. The dictionary can be chosen
+	\textit{a priori}, with analytical patterns which capture specific properties,
+	or adapted to the data, to highlight specific structures present in the data.
+
+\subsubsection{Analytic Dictionary}
+\label{ssub:analytic_dict}
+
+	The analytic approach uses predefined functions to extract
+	interpretable properties of the signal. For example, the dictionary can
+	be set to be the Fourier basis. When this technique is used on the full signal,
+	it gives information on oscillatory properties of the signal such as its
+	harmonic spectrum. This dictionary can also be used to encode sub-segments
+	of the signal using the short-time Fourier Transform (STFT) \citep{Gabor1946}.
+	This technique can be analyzed in the convolutional dictionary model as the
+	resulting spectrogram can be interpreted as an activation signal for each
+	harmonic. Other transformation can be used on windowed signals such as Discrete
+	Cosine Transform \citep{Ahmed1974}, Hadamard Transform \citep{pratt1969hadamard}
+	or Wavelet Transform \citep{Mallat2008}. Each of these transformations is
+	linked to an analytic dictionary. The wavelet transform is of particular
+	interest when interpreted as a convolutional representation. The
+	idea is to use a base pattern, called mother wavelet, which is replicated
+	with different scales (typically the powers of 2) and positions to extract
+	information localized around signal discontinuities. Here, the dictionary
+	is composed of a single pattern, scaled to multiple levels. Using wavelets
+	brings two important advantages: the embedding of the signal on the
+	dictionary can be done using a very efficient methods and the resulting
+	activation signal is very sparse. With analytical dictionaries, the
+	representation captures particular properties that are defined \emph{a priori}.
+	Thus, the choice of the dictionary have a large impact on the type of
+	information highlighted.
+
+% subsubsection analytic_dict (end)
+
+\subsubsection{Learned Dictionary}
+\label{ssub:learned_dict}
+
+	Another choice for the dictionary is to learn it from the observed signals.
+	The shape of the dictionary elements are chosen with an optimization problem,
+	leading to representations that capture the intrinsic information by analyzing
+	unknown patterns. The dictionary elements, also called atoms, are chosen from
+	a constraint set $\Omega$ which is
+	defined by the user. The most common constraint imposed on the dictionary atoms
+	is to have a unit norm. Indeed, for convolutional sparse coding -- where we seek
+	to minimize the $\ell_1$-norm of $Z$ and the reconstruction error -- scaling
+	$\pmb D$ by $\alpha$ and $Z$ by $1/\alpha$, for $\alpha > 1$, does
+	not change the reconstruction error but decreases $\ell_1$-norm of $Z$ by a factor
+	$1/\alpha~.$ Thus, without the unit norm constraint, $Z$ tends to 0 and the norm
+	of the atoms explodes. Other insights for dictionary design can be taken from
+	matrix factorization and dictionary learning techniques for vectorial data. For
+	instance, Principal Component Analysis uses the directions that best explain the
+	variance in the data set as dictionary elements \citep{hotelling1933analysis}.
+	A similar problem can be solved for signals with the Singular Spectrum Analysis
+	(SSA) introduced by \cite{Vautard1989}. It analyzes the recurrent patterns in a
+	time series and extracts the ones that explain the variance of the signal in order
+	to encode the signal using them as dictionary elements. This technique
+	has been studied in details by \cite{Golyandina2002} and is used to analyze short
+	and noisy time series. It notably decomposes the series as the sum of a trend pattern,
+	a few seasonal components and a noise term. In \autoref{chap:ssa}, we will show
+	how this method can be used to compute a convolutional representation. The same idea
+	could be used to extend other matrix factorization techniques such as Independent
+	Component Analysis \citep{Naik2011}, which computes statistically independent
+	dictionary elements.	Another example of dictionary learning technique is the
+	Empirical Wavelet Transform (EWT) developed by \citet{Gilles2013}. This method
+	chooses the dictionary elements by adapting to the observed signals an analytic
+	base constructed from wavelet multi-resolution, thus segmenting the spectral information
+	of the signals. Finally, the dictionary can be learned directly by solving an
+	optimization problem for a given constraint set $\Omega$. This process is described
+	in \autoref{sec:alternate_min}.
+	
+
+
+
+\subsection{Interpretability of the Activation Signal}
+\label{par:embeding_dict}
+
+	The choice of constraints for the signal embedding on the dictionary
+	controls the properties of the representation. A possible constraint is 
+	to penalize with the rank of the representation as done in \citet{Liu2010} or
+	\citet{Candes2011}. This ensures a representation in a low dimensional manifold,
+	compressing the information on a few patterns. The low-rank
+	embedding ensures that if two signals can be represented with similar patterns,
+    the distance between their representation should be small.
+    
+    Another common hypothesis for the convolutional representation is to assume
+    that the coding signals $Z_k$ are sparse, in the sense that only few entries are
+    nonzero in each signal. The sparsity property forces the representation to display
+    localized patterns in the signal. This is very important to the interpretability of
+    the coding signal. Indeed, a sparse signal can be seen as events, or spikes, occurring in
+    time and it is easier to distinguish their regularity of their correlation than with
+    a dense signal. This constraint can be enforced using the $\ell_0$
+    regularization, with algorithms such as the matching pursuit \citep{Mallat1993} and
+    the orthogonal matching pursuit \citep{Pati1993}. Other techniques ensure sparsity
+    by solving a relaxed version of the $\ell_0$-problem using norm $L_p$, $p \le 1$,
+    with algorithms like FOCUSS \citep{Gorodnitsky1997}.
+    One noticeable sparsity inducing technique is the convolutional sparse coding with the
+    sparsity constraint enforced using a $\ell_1$-regularization of the coding signals.
+    The embedding is computed using an specialization of the LASSO problem with convolution
+    product instead of matrix multiplication.
+	\autoref{sec:csc_algo} provides details on this method and the state-of-the-art algorithm
+	to compute the signal embedding.
+
+	% \Question{Group LASSO?}
+	Finally, nonnegative constraints, similar to the one used in  Nonnegative Matrix
+	Factorization (NMF) \citep{Gillis2011}, can be used to improve interpretability.
+	Indeed, forcing the nonnegativity of the activation signals avoids having multiple
+	patterns being mixed together to represent the same phenomena by canceling some
+	parts of each other. This improves interpretability as it makes it easier to see
+	the effect of each separate components.
+
+% paragraph embeding_dict (end)
+
+
+\subsection{Link to Classic Dictionary Learning}
+\label{sub:link_dl}
+
+
+	The convolutional representation is an extension of the matrix factorization
+	problem, which can be retrieved for $W = T = 1$. In this case, the multivariate
+	signal $Z$ is just a coding vector as it is of length $L = 1$ and the sum of
+	convolution can be summarized as a matrix multiplication such that
+	\[
+		X[0] = Z[0]{\pmb D}[0] + \mathcal E[0]~.
+	\]
+	Here, $X[0]$ and $Z[0]$ are vectors, respectively of size $P$ and $K$
+	and $D[0]$ is a matrix of size $K\times P$. Also, using vector forms for
+	the signals, it is possible to re-write the convolutional model as a vectorial
+	model. For a signal $X \in \Xset_T^P$, we define the vector $\bar x\in \Rset^{PT}$
+	representing $X$ as
+	\[
+		\bar x_{t*P + k} = X_k[t]
+		~~~~~~\forall (k, t) \in \llbracket 1, K\rrbracket\times \llbracket0, T-1\rrbracket~.
+	\]
+	We define a band circulant matrix $ D \in \Rset^{KL\times PT}$
+	constructed by repeating the blocks $\bar D \in \Rset^{K\times PW}$ at every
+	time positions, \ie{} for the block dictionary
+	\begin{equation*}
+		\bar{ D} = \begin{bmatrix}
+			d_{1, 1}[0] & \dots & d_{1, P}[0] & \dots & d_{1, 1}[W] & \dots & d_{1, P}[W]\\
+			d_{2, 1}[0] & \dots & d_{2, P}[0] & \dots & d_{2, 1}[W] & \dots & d_{2, P}[W]\\
+			\vdots &  & \vdots && \vdots &  & \vdots\\
+			d_{K, 1}[0] & \dots & d_{K, P}[0] & \dots & d_{K, 1}[W]& \dots & d_{K, P}[W]
+		\end{bmatrix}~,
+	\end{equation*}
+	the band circulant matrix $D$ associated to the convolutional dictionary $\pmb D$ repeats
+	$\bar{D}$ $L = T - K + 1$ times a shift of $P$ columns.
+	\begin{center}
+	\inputTikZ{.8}{vectorial_dictionary}
+	\end{center}
+	\vskip1em
+	where the $\bar 0$ here denotes matrices in $\Rset^{K\times P}$ filled with $0$.
+	This dictionary contains all the patterns from the convolutional dictionary $\pmb D$
+	replicated in all shifted positions. Using this band circulant matrix ${D}$
+	and denoting $\bar z \in \Rset^{KT}$, the model \autoref{eq:model} can be
+	re-written as
+	\begin{equation}
+	\label{eq:model_vect}
+		\bar x =  \bar z { D} + \bar{\varepsilon}
+	\end{equation}
+	where $\bar x, \bar{\varepsilon} \in \Rset^{PT}$ and $\bar z\in \Rset^{KL}$ are
+	vectors representing the signals $X, \mathcal E$ and $Z$.
+	Thus, convolutional dictionary learning is equivalent to dictionary
+	learning for band-circulant matrices and the classical algorithms can be used.
+	However, due to the dimension of \autoref{eq:model_vect}, the algorithms are not
+	efficient enough as they do not make use of the specific structure of the
+	problem. Moreover, if the signals to encode do not have the same length, this
+	formulation cannot be used for multiple signals without zero-padding. The use
+	of the more compact representation \autoref{eq:model} is thus preferred for
+	convolutional representation.
+
+
+% subsection link_dl (end)
+
+
+\biblio{}
+\end{document}

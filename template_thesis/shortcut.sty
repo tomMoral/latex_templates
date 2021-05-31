@@ -1,0 +1,449 @@
+
+\ProvidesPackage{shortcut}[2017/10/23 Custom Package]
+
+% Classic import
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,graphicx}
+\usepackage{amssymb}
+\usepackage{epstopdf}
+\usepackage{pdfpages}
+\usepackage{stmaryrd}
+\usepackage{array}
+\usepackage{color}
+\usepackage{tikz}
+\usepackage{url}
+\usepackage{ifthen}
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{mathtools}     % for arrows with text above/below
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%			Process Style options
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcounter{nstyles}	% Counter to throw a warning if multiple style are used
+
+\DeclareOption{plain}{
+	\def\STYLE{plain}
+	\stepcounter{nstyles}
+  }
+\DeclareOption{ICLR18}{
+	\def\STYLE{ICLR18}
+	\stepcounter{nstyles}
+}
+\DeclareOption{icml2018}{
+	\def\STYLE{icml2018}
+	\stepcounter{nstyles}
+}
+
+\DeclareOption{beamer}{
+	\def\STYLE{beamer}
+	\stepcounter{nstyles}
+}
+\DeclareOption{defense}{
+	\def\STYLE{defense}
+	\stepcounter{nstyles}
+}
+\DeclareOption{thesis}{
+	\def\STYLE{thesis}
+	\stepcounter{nstyles}
+}
+\DeclareOption{jmlr}{
+	\def\STYLE{JMLR}
+	\stepcounter{nstyles}
+}
+\ExecuteOptions{plain}
+
+\ProcessOptions\relax
+
+\ifthenelse{\value{nstyles} > 2}{
+	\PackageWarningNoLine {shortcut options}{
+		Multiple value for shortcut style.
+		Style "\STYLE" will be used.}
+}
+
+% Subfile package to split the article in several files
+\usepackage{subfiles}
+
+% Packages used in this .tex
+\usepackage{rethm}
+\usepackage{aliascnt}
+\usepackage{etoolbox}
+
+% Subcation package to split figures with different titles
+\usepackage{caption}
+\usepackage{subcaption}
+
+% used for inline fractions
+\usepackage{nicefrac}
+
+% used for algorithms
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\renewcommand{\algorithmiccomment}{\hfill $\blacktriangleright$}
+
+
+% Packages hyperref and algorithmic misbehave sometimes.  We can fix
+% this with the following command.
+%\newcommand{\theHalgorithm}{\arabic{chapter}\arabic{algorithm}}
+
+% Tikz imports
+\usetikzlibrary{arrows, positioning, calc}
+\usetikzlibrary{decorations.pathreplacing, patterns}
+
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+
+\newcommand{\TODO}[1]{{\color{red} \textbf{TODO}: #1~}}
+\newcommand{\CHANGES}[1]{{\color{blue}@Changes #1}}
+\newcommand{\Question}[1]{{\color{green} \textbf{Q.}: #1~}}
+\newcommand{\REF}{{\color{blue} \textbf{Add ref}}}
+
+\newcommand{\LAURENT}[1]{{\color{green} @Laurent #1~}}
+
+\newcommand {\Z} {{\mathbb{Z}}}
+\newcommand {\I} {{\textbf{I}}}
+\newcommand {\bO} [2][] {\underset{#1}{\mathcal O}\left(#2\right)}
+\providecommand {\E}[2][] {{\mathbb{E}_{#1}\left[#2\right]}}
+\newcommand {\x} {\textbf{x}}
+\newcommand{\smeq}{\medmuskip=0mu \thickmuskip=0mu \thinmuskip=0mu}
+\newcommand{\tran}{^\mathsf{T}}
+\newcommand{\parallelsum}{\mathbin{\!/\mkern-5mu/\!}}
+\newcommand{\Tr}[1]{\textbf{Tr}\left[#1\right]}
+\newcommand{\mref}[2]{\mbox{\hyperref[#1]{#2~\ref*{#1}}}}
+\newcommand{\Dset}{\mathcal{D}}
+\newcommand{\Hset}{\mathcal{H}}
+\newcommand{\Rset}{{\mathbb{R}}}
+\newcommand{\Nset}{{\mathbb{N}}}
+\newcommand{\Zset}{{\mathbb{Z}}}
+\newcommand{\Xset}{{\mathcal X}}
+\newcommand{\Fset}{{\mathcal F}}
+\newcommand{\Yset}{{\mathcal Y}}
+\newcommand{\zo}{{z'}}
+\newcommand{\ltil}{\tilde{\ell}}
+\newcommand{\pW}{{\pmb{\mathcal W}}}
+
+\newcommand{\st}{\textit{s.t.}}
+\newcommand{\ie}{\textit{i.e.}}
+
+% highlight code
+\newcommand\code[1]{\fcolorbox{white}{gray!15}{\color[rgb]{0,.3,.6}\texttt{#1}}}
+
+
+
+\newcommand {\sN} {{\sim \mathcal N(0, \I)}}
+\newcommand {\sZ} {{\sim \mathcal Z}}
+\DeclareMathOperator*{\prox}{\text{prox}}
+\DeclareMathOperator*{\argmin}{\arg\!\min}
+\DeclareMathOperator*{\argmax}{\arg\!\max}
+
+
+\setlength\delimitershortfall{-3pt}
+	
+%\PassOptionsToPackage{style=numbers}{natbib}
+%\usepackage{geometry}                % See geometry.pdf to learn the layout options.
+%\geometry{letterpaper}                   % ...or a4paper or a5paper or ...
+%\geometry{landscape}                % Activate for for rotated page geometry
+%\usepackage[parfill]{parskip}    % Activate to begin paragraphs with an empty line rather than an indent
+
+
+% Reuse subfiles by defining SubfileLocation
+\def\SubfileLocation{.}
+\let\subfiles\subfile
+\renewcommand{\subfile}[1]{\subfiles{\SubfileLocation/#1}}
+
+%Tikz insert from subfile in subfile
+\def\TikzLocation{./}
+\newcommand{\inputTikZ}[2]{\scalebox{#1}{\subfile{\TikzLocation#2}}}
+
+%Biblio in subfiles
+%\def\Bibstyle{plainnat}
+\def\biblio{\bibliographystyle{\Bibstyle}\bibliography{\BibFile}}
+\let\cbiblio\biblio
+
+\makeatletter
+
+
+\ifthenelse{\equal{\STYLE}{plain}}{
+    \usepackage{geometry}
+	\geometry{a4paper}
+    \usepackage{natbib}
+    \usepackage[parfill]{parskip}
+    \def\Bibstyle{abbrv}
+    \let\And
+}{
+\ifthenelse{\equal{\STYLE}{beamer}}{
+  	\def\BEAMER{}
+	\bibliographystyle{apalike}
+	\mode<presentation> {
+		\usetheme{PrezCMLA}
+		\usecolortheme{PrezCMLA}
+		\setbeamertemplate{navigation symbols}{} % Remove the navigation symbols
+	}
+}{
+\ifthenelse{\equal{\STYLE}{defense}}{
+		\def\BEAMER{}
+	\bibliographystyle{apalike}
+	\mode<presentation> {
+		\usetheme{DefenseCMLA}
+		%\setbeamertemplate{navigation symbols}{} % Remove the navigation symbols
+	}
+
+	\usepackage[orientation=landscape,size=custom,width=33,height=12,scale=0.55]{beamerposter}
+}{
+\ifthenelse{\equal{\STYLE}{JMLR}}{
+        \usepackage{jmlr2e}
+    	\usepackage[parfill]{parskip}
+        \def\Bibstyle{abbrv}
+}{
+\ifthenelse{\equal{\STYLE}{ICLR}}{
+	\usepackage{iclr2017_conference}
+	\def\Bibstyle{iclr2017_conference}
+}{
+
+\ifthenelse{\equal{\STYLE}{icml2018}}{
+    \usepackage[accepted]{icml2018} 
+	% \usepackage{icml2018}
+	\def\Bibstyle{icml2018}
+}{
+\ifthenelse{\equal{\STYLE}{ICLR18}}{
+	\usepackage{iclr2018_conference, times}
+	\def\Bibstyle{iclr2018_conference}
+}{
+\ifthenelse{\equal{\STYLE}{ICLR_final}}{
+    \usepackage{iclr2017_conference}
+    \def\Bibstyle{iclr2017_conference}
+     \iclrfinalcopy
+}{
+\ifthenelse{\equal{\STYLE}{NIPS}}{
+    \usepackage[final]{nips_2016}
+    \def\Bibstyle{plainnat}
+    \setcitestyle{numbers,square}
+}{
+\ifthenelse{\equal{\STYLE}{thesis}}{
+    \usepackage[a4paper, twoside=true, pass, inner=4cm, outer=2cm]{geometry}
+    \usepackage{natbib}
+	\usepackage{calc}
+	\usepackage{multicol,multirow}
+	\usepackage{titletoc}
+	\def\Bibstyle{author_year_style}
+	\let\And
+
+	% Control paragraph
+	\setlength{\parskip}{.5em} % 1ex plus 0.5ex minus 0.2ex}
+	\setlength{\parindent}{0pt}
+
+	% fix toc part numbers
+	\renewcommand\partnumberlinebox[2]{#2 - }%\hspace{.5em}}
+
+	% Add strechable space before chapter to avoid breaking just
+	% after new toc line
+	\setlength{\cftbeforechapterskip}{1.0em plus 0.3em minus 0.1em}
+	\setlength{\cftbeforepartskip}{2.5em plus 0.5em minus 0.2em}
+
+	% Algorithm numbered with chapters
+	% \@addtoreset{algorithm}{chapter}% algorithm counter resets every chapter
+	\renewcommand{\thealgorithm}{\thechapter.\arabic{algorithm}}% Algorithm # is <chapter>.<algorithm>
+
+	\usepackage{amsthm}
+	\newtheorem{theorem}{Theorem}[chapter]
+
+}{
+   \PackageError{STYLE selection}{
+     value "\STYLE" ("\detokenize{\STYLE}")unkown for STYLE.
+     Possible values are: {JMLR, NIPS, ICLR, ICLR_final, plain, beamer}}{}
+  \endswitch
+}}}}}}}}}}
+
+
+%FIX natbib citation style
+\ifthenelse{\isundefined{\BEAMER}}{
+	\usepackage{hyperref}
+	%\usepackage[draft]{hyperref}
+	
+
+	\pretocmd{\NAT@citex}{%
+	  \let\NAT@hyper@\NAT@hyper@citex
+	  \def\NAT@postnote{#2}%
+	  \setcounter{NAT@total@cites}{0}%
+	  \setcounter{NAT@count@cites}{0}%
+	  \forcsvlist{\stepcounter{NAT@total@cites}\@gobble}{#3}}{}{}
+	\newcounter{NAT@total@cites}
+	\newcounter{NAT@count@cites}
+	\def\NAT@postnote{}
+
+	% include postnote and \citet closing bracket in hyperlink
+	\def\NAT@hyper@citex#1{%
+	  \stepcounter{NAT@count@cites}%
+	  \hyper@natlinkstart{\@citeb\@extra@b@citeb}#1%
+	  \ifnumequal{\value{NAT@count@cites}}{\value{NAT@total@cites}}
+		{\ifNAT@swa\else\if*\NAT@postnote*\else%
+		 \NAT@cmt\NAT@postnote\global\def\NAT@postnote{}\fi\fi}{}%
+	  \ifNAT@swa\else\if\relax\NAT@date\relax
+	  \else\NAT@@close\global\let\NAT@nm\@empty\fi\fi% avoid compact citations
+	  \hyper@natlinkend}
+	\renewcommand\hyper@natlinkbreak[2]{#1}
+
+	% avoid extraneous postnotes, closing brackets
+	\patchcmd{\NAT@citex}
+	  {\ifNAT@swa\else\if*#2*\else\NAT@cmt#2\fi
+	   \if\relax\NAT@date\relax\else\NAT@@close\fi\fi}{}{}{}
+	\patchcmd{\NAT@citex}
+	  {\if\relax\NAT@date\relax\NAT@def@citea\else\NAT@def@citea@close\fi}
+	  {\if\relax\NAT@date\relax\NAT@def@citea\else\NAT@def@citea@space\fi}{}{}
+
+}{
+	\def\graphicspath#1{\def\Ginput@path{#1{/home/tom/Pictures/Logos/}}}
+}
+
+\makeatother
+
+
+% Declare common theorem environments
+\ifthenelse{\isundefined{\theorem}}{
+	\usepackage{amsthm}
+	\newtheorem{theorem}{Theorem}
+}{
+	% redefine the Lemma and propostition environment to get correct autoref
+	\let\corollary\undefined
+}
+
+\newcommand{\maketheorem}[3][theorem]{
+	\expandafter\let\csname #2\endcsname\undefined
+	\newaliascnt{#2}{#1}
+	\newtheorem{#2}[#2]{#3}
+	\aliascntresetthe{#2}
+	\expandafter\def\csname#2autorefname\endcsname~##1\null{#3~##1\null}
+}
+
+% Fix autoref naming for Proposition and Lemma
+\maketheorem{lemma}{Lemma}
+\maketheorem{corollary}{Corollary}
+\maketheorem{proposition}{Proposition}
+\maketheorem{definition}{Definition}
+\maketheorem{remark}{Remark}
+
+\newtheorem{theoremA}{Theorem}[section]
+\maketheorem[theoremA]{lemmA}{Lemme}
+\maketheorem[theoremA]{propositionA}{Proposition}
+
+
+\newtheorem{hypothesis}{H\hskip.0em}
+%\def\hypothesisautorefname{H\hskip.0em}
+
+% Set autoref names for sections and equation environments
+\def\equationautorefname~#1\null{(#1)\null}
+\def\hypothesisautorefname~#1\null{(\textbf{H#1})\null}
+\def\algorithmautorefname{Algorithm}
+\def\chapterautorefname{Chapter}
+\def\sectionautorefname{Section}
+\def\subsectionautorefname{Subsection}
+\def\subsubsectionautorefname{Subsubsection}
+
+% Avoid appendix resets
+\let\makeappendix\appendix
+\renewcommand{\appendix}{
+	\makeappendix
+	\def\makeappendix{}
+}
+
+\usepackage{thmtools,thm-restate}
+\newcommand{\restatethm}[2]{
+	\ifthenelse{\isundefined{#1}}{
+		\textbf{Recall \autoref{#2}}
+	}{
+		#1*
+	}
+}
+\newcommand{\numberedthm}[2]{
+	\ifthenelse{\isundefined{#1}}{
+		\textbf{Recall \autoref{#2}}
+	}{
+		#1
+	}
+}
+
+\definecolor{linkcolor}{RGB}{83,83,182}
+\definecolor{darkred}{RGB}{126,42,92}
+
+% Tweak hyper ref
+\hypersetup{
+	colorlinks=true,
+	citecolor=linkcolor,
+	linkcolor=linkcolor}
+
+\ifthenelse{\equal{\STYLE}{thesis}}{
+
+	%--------------------------------
+	%      Chapter algorithms
+	%--------------------------------
+	\usepackage{newfloat}
+	\SetupFloatingEnvironment{algorithm}{within=chapter}
+
+
+	%----------------------------
+	%      Font encoding
+	%----------------------------
+	\usepackage[french, main=british]{babel}
+	\usepackage[T1]{fontenc}
+
+
+	%------------------------------------------------
+	%		Adapt autoref name to language
+	%------------------------------------------------
+
+	\addto\extrasfrench{
+		\def\chapterautorefname{Chapitre}
+		\def\partautorefname{Partie}
+		\def\equationautorefname~#1\null{(#1)\null}
+		\def\algorithmautorefname{Algorithme}
+		\def\sectionautorefname{Section}
+	} 
+	\addto\extrasbritish{
+		\def\chapterautorefname{Chapter}
+		\def\partautorefname{Part}
+		\def\equationautorefname~#1\null{(#1)\null}
+		\def\algorithmautorefname{Algorithm}
+		\def\sectionautorefname{Section}
+		\def\subsectionautorefname{Subsection}
+		\def\subsubsectionautorefname{Subsubsection}
+	}
+
+
+	%---------------------
+	%	TABLE OF NOTATIONS
+	%---------------------
+
+	\usepackage{tabto}
+	\newcommand{\Page}[1]{p.~\pageref{#1}}
+	\newcommand{\notation}[3]{$#1$ & #2 \\[.7em]}%&& \Page{#3}\\[.7em]}
+	\newcommand{\notationTitle}[1]  {\\\multicolumn{2}{l}{\textbf{#1}}\\[1.5em]}
+
+
+	%------------------------
+	%	Add french Thm env
+	%------------------------
+
+	\newtheorem{theoremFR}[theorem]{Théorème}
+	\newtheorem{corollaryFR}[theorem]{Corollaire}
+}{}
+
+% Link with logo
+
+\newcommand{\logol}[1]{\includegraphics[height=1em]{#1}}
+\newcommand{\link}[3][]{%
+\ifthenelse{\equal{#1}{}}{
+		\raisebox{-.25em}{\logol{#3}} #2\hskip1em
+	}{
+		\raisebox{-.2em}{\logol{#3}} \href{#1}{#2}\hskip1em
+	}%
+}
+
+
+% Hyphenation
+\hyphenation{sta-tis-ti-cal}
+\hyphenation{es-ti-mat-ed}
+\hyphenation{in-ter-pretabil-i-ty}
+\hyphenation{SeqDICOD}
+
+% End of the package
+\endinput

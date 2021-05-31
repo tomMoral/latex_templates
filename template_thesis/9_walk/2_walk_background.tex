@@ -1,0 +1,125 @@
+\documentclass[../thesis.tex]{subfiles}
+\crossref{}
+\begin{document}
+
+\section{Gait Signals}
+\label{sec:walk:data}
+
+\subsection{What is a step ?}
+\label{sub:walk:stepdef}
+
+
+Locomotion is a hierarchical and complex phenomenon composed of different entities such as strides, steps, and phases \citep{auvinet2002reference, mariani}.
+%
+\begin{itemize}
+	\item  Considering one foot, the stride is the succession of two phases:
+	the \emph{swing phase} (when the foot is in the air), and the
+	\emph{stance phase} (when the foot is in contact with the ground). The
+	stance phase occurs between the heel-strike (moment when the foot hits
+	the ground) and the toe-off (moment when the toes go off the ground),
+	while the swing phase occurs between the toe-off and the next
+	heel-strike.
+	\item A \emph{stride} is defined as the event that occurs between two
+	heel-strikes of the same foot.
+	\item A \emph{step} is defined as the event that occurs between
+	successive heel strikes of opposite feet. A step is therefore composed
+	of two strides: one for the right foot, one for the left foot.
+\end{itemize}
+%
+In the formal medical definition, a step is supposed to start when the heel strikes the ground and to finish somewhere in the end of the stance phase. It is not related to the foot activity since the foot is also moving in the swing phase. We choose in this chapter another definition: a step is defined in the following as the whole period of activity of a foot (when the foot is moving).  The beginning of the step is  defined as the heel-off (moment when the heel leaves the floor) and end of the step is defined as the foot-flat (moment when the foot is stabilized on the floor). This new definition allows considering the whole period of activity of a foot as a step, which makes it more adapted to step detection. Note that it does not change the number of steps and that it is easy to switch back to the medical definition once the heel-off and foot-flat instants have been detected.
+
+% subsection sub:walk:stepdef (end)
+
+
+\subsection{Data Acquisition and First Observations}
+
+
+\begin{table*}[t]
+\begin{center}
+\begin{tabular}{|p{3cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|}
+%
+\hline
+ \textbf{Group} &\textbf{Number of exercises}&\textbf{Number of subjects}&\textbf{Sex (M/F)}&\textbf{Age (yr)}&\textbf{Height (cm)}&\textbf{Weight (kg)}\\
+\hline
+\hline
+Healthy subjects & 242 & 52 & 35/17 & 36.4 (20.6) &  173.4 (10.8) &  70.7 (12.2)\\
+\hline
+Orthopedic diseases & 243 & 53 & 26/27 & 60.1 (19.3) &  169.2 (10.2) &  77.4 (16.8)\\
+\hline
+Neurologic diseases & 535 & 125 & 80/45 & 61.6 (13.2) &  169.8 (8.7) &  72.7 (15.5)\\
+\hline
+\hline
+\textbf{Total} & 1020 & 230 & 141/89 & 55.5 (19.6) &  170.5 (9.7) &  73.4 (15.3)\\
+\hline
+\end{tabular}
+\end{center}
+\caption{Subjects' characteristics. For the age, height and weight, the mean and the standard deviations are displayed.}\label{subjects}
+\end{table*}
+
+
+
+\begin{figure*}[th]
+\centering
+\begin{subfigure}[b]{0.25\textwidth}
+	\includegraphics[width=\textwidth]{walk/plancapteur}
+	\caption{ Definition of the axis for the XSens$^{\mbox{\tiny TM}}$ sensor located at the left foot}
+	\label{capteurs}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.35\textwidth}
+	\includegraphics[width=\textwidth]{walk/sane_step}
+	\caption{Healthy patient}
+	\label{fig:sain}
+\end{subfigure}%
+\hfill
+\begin{subfigure}[b]{0.35\textwidth}
+    \includegraphics[width=\textwidth]{walk/unsane_step}
+    \caption{Hip affected patient}
+    \label{fig:atteint}
+\end{subfigure}
+\caption{(a) XSens$^{\mbox{\tiny TM}}$ sensor - (b,c) Vertical acceleration, Z-axis acceleration and the Y-axis angular velocity recorded from the right foot. The vertical lines display the different possibilities for start/end times.}\label{patientSain}
+\end{figure*}
+
+
+The data used for the conception and testing of the method presented in this chapter has been provided by the following medical departments: Service de chirurgie orthopédique et de traumatologie de l'Hôpital Européen Georges Pompidou, Assistance Publique des Hôpitaux de Paris, Service de médecine physique et de réadaptation de l'Hôpital Fernand Widal, Assistance Publique des Hôpitaux de Paris, Service de neurologie de l'Hôpital d’Instruction des Armées du Val de Grâce, Service de Santé des Armées. The study was validated by a local ethic comity (Comité de Protection des Personnes Ile de France II, CPP 2014-10-04 RNI) and both patients and control subjects gave their written consent to participate. All signals have been acquired at 100 Hz with wireless XSens MTw$^{\mbox{\tiny TM}}$ sensors located at the right and left foot and fixed using a velcro band designed by XSens$^{\mbox{\tiny TM}}$. The signals obtained with both sensors were automatically synchronized by the acquisition software. All subjects were asked to:
+%
+\begin{enumerate}
+    \item stand quiet for 6 seconds
+    \item Walk 10 meters at preferred walking speed on a level surface
+    \item Make a U turn
+    \item Walk back
+    \item Stand quiet 2 seconds
+\end{enumerate}
+%
+\autoref{fig:walk:exo} illustrates this protocol. For practical reasons, patients kept their own shoes. The database is composed of 230 subjects who performed the protocol between 1 and 10 times, which leads to 1020 recordings.  The subjects' characteristics are presented in \autoref{subjects}. Healthy subjects had no known medical impairment. The orthopedic group is composed of 2 cohorts of distinct pathologies: lower limb osteoarthrosis and cruciate ligament injury. The neurologic group is composed of 4 cohorts: hemispheric stroke, Parkinson’s disease, toxic peripheral neuropathy and radiation induced leukoencephalopathy.
+
+
+\begin{figure}[tp]
+	\centering
+	\includegraphics[scale=0.5]{walk/exo_marche}
+	\caption{Clinical protocol for the walk study}
+	\label{fig:walk:exo}
+\end{figure}
+
+
+The protocol includes 2 sensors (left and right foot), and each of them records a 9-dimensional signal (3D accelerations, 3D angular velocities, 3D magnetic fields), possibly with some recalibrated data provided by the XSens$^{\mbox{\tiny TM}}$ software (such as the vertical acceleration in the direction of the gravity). Instead of considering all these dimensions, we decided to only use a subset of them, and select the most relevant in the context of step detection. This decision has been made based on observations of real data and physiological reasons provided by doctors. We decided to select only the components that are the most reflective of the locomotion process (see \autoref{capteurs} for the definition of the axis): the Z-axis acceleration, the recalibrated vertical acceleration (vertical movements of the foot) and the Y-axis angular velocity (swing in the direction of the walk). We expect these components to strongly react to the steps, making them identifiable.
+
+
+
+Examples of these 3 components (Z-axis acceleration, vertical acceleration and Y-axis angular velocity) recorded for the right foot are presented on \autoref{fig:sain} and \autoref{fig:atteint} for respectively a healthy and hip-injured patient. It appears on these figures that the amplitudes of the signals are clearly different and it is likely that classical threshold-based methods would hardly perform well on both subjects. However, the structure and shape of the step is roughly the same for both subjects so it might be relevant to use a template-based method. Nevertheless, these examples also display the main difficulties in conceiving an automatic algorithm for step detection:
+%
+\begin{itemize}
+    \item The uncertainties in the definition of the starts and ends of the
+    steps. Indeed, we can see on \autoref{fig:sain}, that many choices would
+    be acceptable: depending on the considered definition, the results may
+    be different.
+    \item The variability of the step patterns according to the pathology,
+    the age, the weight, etc. For example, on \autoref{fig:atteint}, the
+    subject is dragging his feet, causing an abrupt change in the step
+    pattern (noisy part at the end of the step).
+\end{itemize}
+
+
+
+\biblio{}
+\end{document}

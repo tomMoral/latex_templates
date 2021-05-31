@@ -1,0 +1,40 @@
+\documentclass[../thesis.tex]{subfiles}
+\crossref{}
+\begin{document}
+
+
+\chapterwithoutpageskip{Notation}
+\label{chap:notation}
+
+
+{
+\centering
+\begin{tabular}{p{5em} p{30em} p{2em} r}
+\notationTitle{General}
+\notation{\mathcal O_n}{Orthogonal matrices in $\Rset^{n\times n}$ }{chap:ssa}
+\notation{L_2(\mathbb R)}{Space of functions $f$ from $\mathbb R$ to $\mathbb R$ with $\int_\mathbb{R}f^2  < +\infty$}{chap:ssa}
+\notation{\llbracket n_1, n_2\rrbracket}{Ensemble of integers between $n_1$ and $n_2$}{chap:csc}
+\notation{\pmb I_n}{Identity matrix in $\Rset^{n\times n}$ }{chap:csc}
+\notationTitle{Time series}
+\notation{\Xset_T^P}{Ensemble of multivariate signals in $\Rset^P$ of length $T \in \Nset$}{chap:csc}
+\notation{X}{Element (signal) of $\Xset_T^P$}{chap:csc}
+\notation{X[t]}{Value of the signal $X$ at time sample $t$.}{}
+\notation{X_p}{$p$-th channel of $X$, for $p \in \llbracket 1, P\rrbracket$.
+				Note that for all $t\in \llbracket 0, T-1\rrbracket$
+				\[X[t] = \begin{pmatrix} X_1[t]\\..\\X_P[t] \end{pmatrix}\]}{chap:csc}
+\notation{z*D}{The convolution between $z \in \Xset_L^1$ and $D \in\Xset_W^P$.
+  			   The resulting signal $X$ is in $\Xset^P_T$, with length $\smeq T = L + W - 1$,
+  			   and for $\llbracket 0, T-1\rrbracket$,
+  			   \[
+					X[t] = (z * D)[t] = \sum_{\tau=0}^{W-1}z[t-\tau]D[\tau]~.
+				\]
+}{chap:csc}
+\end{tabular}
+}
+
+
+
+% section context (end)
+
+\biblio{}
+\end{document}

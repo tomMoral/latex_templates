@@ -1,0 +1,24 @@
+
+% \usepackage{appendix}
+\newenvironment{proof_section}{%
+
+	% \chapterwithoutskip{Proof}
+	% \addcontentsline{toc}{chapter}{\hskip1em Proofs}
+	% \counterwithin{figure}{section}
+	% \counterwithin{table}{section}
+	% \counterwithin{propositionA}{section}
+
+	\newpage
+
+	\section{Proofs}
+	\let\csection\section
+	\let\csubsection\subsection
+	\let\section\subsection
+	\let\subsection\subsubsection
+	\setcounter{secnumdepth}{3}
+}{%
+
+	\let\section\csection
+	\let\subsection\csubsection
+	\setcounter{secnumdepth}{2}
+}

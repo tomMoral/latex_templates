@@ -1,0 +1,36 @@
+\documentclass[11pt]{article}
+
+
+% Import packages necessary for compilations
+\usepackage{xr}
+\usepackage{ifthen}
+
+% Import tikz packages for subfiles
+\usepackage{tikz}
+\usetikzlibrary{arrows, positioning, calc}
+\usetikzlibrary{decorations.pathreplacing, patterns}
+
+% Set up preview for standalone compilation
+\usepackage[active,tightpage,psfixbb]{preview}
+\PreviewEnvironment{pgfpicture}
+\setlength\PreviewBorder{10pt}
+
+% import math packages
+\usepackage{amsmath}
+
+% Define biblio
+\usepackage{natbib}
+\def\Bibstyle{author_year_style}
+\def\BibFile{../library.bib}
+\def\sbiblio{\bibliographystyle{\Bibstyle}\bibliography{\BibFile}}
+
+\newcommand{\inputTikZ}[2]{\scalebox{#1}{\subfile{#2}}}
+
+\usepackage{subfiles}
+\newcommand{\smeq}{\medmuskip=0mu \thickmuskip=0mu \thinmuskip=0mu}
+
+
+\begin{document}
+a
+
+\end{document}

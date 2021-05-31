@@ -1,0 +1,82 @@
+\documentclass[main_tikz.tex]{subfiles}
+
+
+\begin{document}
+
+\begin{tikzpicture}
+\tikzset{
+    %Define standard arrow tip
+    >=stealth',
+    %Define style for boxes
+    dict/.style={
+           rectangle,
+           rounded corners,
+           draw=black!70, very thick,
+           fill=green!20,
+           text width=4em,
+           minimum height=2em,
+           text centered},
+    zero/.style={
+           rectangle,
+           rounded corners,
+           draw=black!70, very thick,
+           fill=red!20,
+           text width=1em,
+           minimum height=2em,
+           text centered},
+    sroot/.style={
+           text width=0em,
+           minimum height=2em},
+};
+
+
+\pgfmathsetmacro{\iO}{-1.9}
+\pgfmathsetmacro{\ione}{3.6}
+\pgfmathsetmacro{\heighl}{-0.8}
+\pgfmathsetmacro{\heighz}{0.3}
+\pgfmathsetmacro{\sep}{0.05}
+\pgfmathsetmacro{\S}{0.8}
+\pgfmathsetmacro{\r}{(-\iO-1.5)/\S}
+
+
+\node[sroot] (root) {};
+\node[dict, right=0em of root.west](D) {$\bar{ D}$};
+\node[zero, right=0em of D.east] (zero){$\bar{0}$};
+\foreach \i in {1,2}{
+	\node[sroot, below=0em of root.south] (zroot) {};
+	\node[zero, right=0em of zroot.west] (zero){$\bar{0}$};
+	\node[sroot, right=0em of zero.east] (root) {};
+	\node[dict, right=0em of root.west] (D\i) {$\bar{ D}$};
+	\node[zero, right=0em of D\i.east] (zero){$\bar{0}$};
+	\node[sroot, below=0em of root.south] (zroot) {};
+}
+\node[sroot, below=4em of zroot] (zroot) {};
+\node[sroot, right=8em of zroot] (zroot) {};
+
+\foreach \i in {4,5}{
+	\node[zero, right=0em of zroot.west] (zero){$\bar{0}$};
+	\node[sroot, right=0em of zero.east] (root) {};
+	\node[dict, right=0em of root.west] (D\i) {$\bar{ D}$};
+	\node[zero, right=0em of D\i.east] (zero){$\bar{0}$};
+	\node[sroot, below=0em of root.south] (zroot) {};
+}
+\node[zero, right=0em of zroot.west] (zero){$\bar{0}$};
+\node[sroot, right=0em of zero.east] (root) {};
+\node[dict, right=0em of root.west] (D) {$\bar{ D}$};
+
+
+\node[below=8em of D2] {\Huge 0};
+\node[above=8em of D4] {\Huge 0};
+
+\draw[dashed, black] (D2.south) -- (D4.north) node[midway] (mid) {};
+
+\draw[solid, line width = 1pt] (-.5, 0.5) arc (-18:20:-11);
+\draw[solid, line width = 1pt] (9, .5) arc (18:-20:11);
+
+\node[left=15em of mid] {\Large$D = $};
+
+
+
+\end{tikzpicture}
+
+\end{document}

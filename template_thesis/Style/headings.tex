@@ -1,0 +1,37 @@
+\makeevenhead{headings}{\thepage}{}{\textsc\leftmark}
+\makeoddhead{headings}{\hskip-3em\textsc\rightmark}{}{\thepage}
+
+
+%\makeevenfoot{headings}{}{}{\scriptsize\texttt{git: 	\input{git}}}
+
+\pagestyle{headings}
+
+\newcommand\partialtocname{Contents}
+\newcommand\ToCrule{\noindent\rule[1pt]{\textwidth}{0.2pt}}
+\newcommand\ToCtitle{{\large\bfseries\partialtocname}\vskip2pt\ToCrule}
+\makeatletter
+\newcommand\Mprintcontents[1]{%
+
+	\setlength{\parskip}{0em}
+	\setcounter{tocdepth}{2}
+	\ToCtitle
+	\vskip4pt
+	\ttl@printlist[#1]{toc}{toc}{1}{}
+	\ToCrule
+	\vspace{1cm}
+	
+	\setlength{\parskip}{.5em}
+  %\par\nobreak
+}
+\makeatother
+
+
+% To shift section number into the left margin
+%\hangsecnum
+
+% This does not work?
+%\usepackage{sectsty}
+%\usepackage{titlecaps}
+%\let\svsection\section
+%\def\section#1{\svsection{\titlecap{#1}}}
+%\sectionfont{\titlecap}

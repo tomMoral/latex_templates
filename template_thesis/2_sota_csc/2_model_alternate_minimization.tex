@@ -1,0 +1,135 @@
+\documentclass[../thesis.tex]{subfiles}
+\crossref{}
+\begin{document}
+
+\section{Learning Dictionary via Alternate Minimization}
+\label{sec:alternate_min}
+
+
+	Multiple algorithms have been designed to learn a dictionary suitable to
+	represent a set of vectors, such as the Method of Optimal Directions (MOD;
+	\citealt{Engan1999}), the K-SVD \citep{Aharon2006}, the stochastic gradient
+	descent \citep{Aharon2008} or the online dictionary learning \citep{Mairal2010}.
+	These techniques all rely on an alternated procedure
+	which computes the embedding of the data point on the dictionary and then
+	update the dictionary to improve the representation. In the case of the
+	$\ell_1$-penalized coding signal, the process to learn a dictionary that
+	can describe a given set of signals $\left \{ X^{[1]}, \dots, X^{[N]} \right \}$
+	can be posed as an optimization problem such that
+	\begin{equation}
+		\label{eq:dict_learn}
+		\argmin_{\pmb D\in \Omega}
+			~\underbrace{\frac{1}{N}\sum_{n=1}^N \argmin_{Z^{[n]}}
+			\frac{1}{2} \left\|X^{[n]} - \sum_{k=1}^KZ^{[n]}_k* \pmb D_k\right\|_2^2}_{G_N(\pmb D)}
+			+ ~\lambda\Psi\left(Z^{[n]}\right)~,
+	\end{equation}
+	for a certain set of constraints $\Omega$ for the dictionary $\pmb D$ and a regularization
+	function $\Psi$ for the coding signal. For sparse dictionary learning, the regularization
+	function $\Psi$ is usually chosen chosen to be either the $\ell_1$ or $\ell_0$-norm of
+	the coding signal \citep{Grosse2007, Yellin2017}. The learned dictionary can be adapted
+	to the intended usage by imposing different sets of constraints $\Omega$ 
+	to the dictionary's elements. Finding both $\pmb D$ and $Z$ is a non-convex
+	problem. However, estimates of the solution can be obtained using alternate
+	minimization. This method requires to be able to solve two independent steps.
+	The first one is to infer the
+	activation signal associated to a given signal and dictionary. This step is
+	named convolutional sparse coding and is described in \autoref{sec:csc_algo}.
+	It computes the embedding $Z^{[n]}$ for all signals $X^{[n]}$ and the current
+	dictionary $\pmb D^{(q)}$ for $n \in \llbracket 1, N\rrbracket$. 
+	Then, the second step is to be able to update the dictionary, to find
+	the atoms that best describes the given signal population. Given a constraint
+	set $\Omega$, the dictionary is updated to improve the modeling of the signals
+	$X^{[n]}$ given the current coding signals $Z^{[n]}$. This step and algorithms
+	to update the dictionary are described in \autoref{sec:dict_update}.
+
+
+\subsection{Online Learning}
+\label{sub:dl_online}
+
+	One of the drawbacks of the alternate minimization algorithm is its complexity. At each
+	iteration, it is necessary to compute convolutional sparse coding for all signals.
+	This step is computationally expensive. Moreover, if the
+	dictionary needs to be updated to take into account a new signal, it is also necessary
+	to recompute the codes for all the other signals to be able to perform the update. One
+	way to improve the efficiency of the alternate minimization is to use online dictionary
+	learning. This technique -- proposed by \citet{Mairal2010} for vectorial data -- has
+	recently been extended for convolutional dictionary learning in \citet{Liu2017a}. The
+	core idea of this procedure is to approximate at each iteration $q$ the function $G_N$
+	by a surrogate function $\widehat G_q$ defined as
+	\begin{equation}
+		\widehat G_q(\pmb D) = \frac{1}{q}\sum_{p=1}^q\frac{1}{2} \left\|X^{[p]}
+								- \sum_{k=1}^KZ^{[p]}_k* \pmb D_k\right\|_2^2~,
+	\end{equation}
+	with $Z^{[p]}$ the coding signal for signal $X^{[p]}$ for dictionary $\pmb D^{(p)}$
+	at iteration $p$. Note that with this surrogate function, only one signal $X^{[p]}$
+	is encoded at each iteration.
+
+	Multiple variants of this algorithm have been proposed to improve its convergence.
+	A very natural variant is to use mini-batch updates for the surrogate function. At
+	each step $q$, instead of only selecting one signal, a batch of $Q$ signals are added
+	in the surrogate function. In order to give more importance to the samples with more
+	accurate coding signals, computed with more recent dictionary, \citet{Mairal2010}
+	proposed to add a forgetting factor to the previous samples. The surrogate function
+	becomes
+	\begin{equation}
+		\overline G_{q, \gamma}(\pmb D) = \frac{1}{q}\sum_{p=1}^q \frac{\gamma^p}{2} \left\|X^{[p]}
+					- \sum_{k=1}^KZ^{[p]}_k* \pmb D_k\right\|_2^2~,
+	\end{equation}
+	where $0 < \gamma < 1$ is a forgetting factor, controlling the importance of history
+	in the new updates.	Another online approach to learn convolutional dictionary
+	was described in \citet{Kavukcuoglu2013}. In their paper, they rely
+	on the stochastic gradient descent approach to update their dictionary. At each
+	iteration $q$, they draw randomly one of the signal $X^{[q]}$ and compute its coding
+	signal $Z^{[q]}$. The dictionary is then updated by considering the surrogate function
+	$g_q$, defined as
+	\begin{equation}
+		g_q(\pmb D) = \frac{1}{2} \left\|X^{[q]} - \sum_{k=1}^KZ^{[q]}_k* \pmb D_k\right\|_2^2~.
+	\end{equation}
+	
+
+
+% subsection dl_online (end)
+
+
+	
+	
+\subsection{Theoretical Guarantees for Convolutional Representation}
+\label{sub:conv_dl_theory}
+
+
+	The alternate minimization approach for dictionary learning is not guaranteed to
+	converge to a good solution in general. Indeed, the non-convexity of the problem
+	makes it hard to determine a convergence at all. The first theoretical studies of
+	alternate minimization for dictionary learning were for vectorial data. In their
+	paper, \citet{Agarwal2014} show that if data is generated using a dictionary
+	$ \pmb D^0$, there exists a polynomial time algorithm which permits estimating
+	this dictionary, given that there are enough samples and that the observed signals
+	do not have noise or outliers. The algorithm relies on initialization schemes
+	proposed by previous works \citep{Arora2013, Agarwal2013} which ensures that the
+	initial estimate of the dictionary is in the neighborhood of the solution.
+	\citet{Gribonval2015} show the sample complexity of dictionary retrieval methods
+	under presence of noise and outlier points. This paper does not provide an algorithm
+	to find the dictionary but quantifies the effect of the assumptions made in the
+	model. One key quantity in their analysis is the \emph{cumulative coherence} which
+	quantifies the over-completeness of the dictionary elements with the sparsity of
+	the coding vectors.
+
+	As we have seen in \autoref{sub:link_dl}, the convolutional setting is equivalent
+	to the vectorial case. Thus, these previous works can be directly applied for
+	convolutional dictionary learning. However, due to the particular structure
+	of the problem, these results can be improved to better handle the temporal structure.
+	Recent work from \cite{Papyan2017a} introduces quantities which extend the different
+	concepts used in sparse coding literature to convolutional settings and highlights
+	the properties of dictionary elements critical for the uniqueness of the coding signal.
+	The core of their analysis is to study the properties of stripes of the original signal,
+	avoiding the very large dimension of the whole signal. Their work is completed in
+	a companion paper which studies the recovery capacities of classical convolutional
+	sparse coding algorithms for noisy observations \citep{Papyan2016a}.
+
+	
+% subsection conv_dl_theory (end)
+
+% section alternate_min (end)
+
+\biblio{}
+\end{document}

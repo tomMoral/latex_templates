@@ -1,0 +1,24 @@
+\documentclass[../thesis.tex]{subfiles}
+\begin{document}
+%
+%
+\ifthenelse{\isundefined{\notitle}}{
+\chapterwithoutpageskip{Résumé}}{}
+\selectlanguage{french}
+%
+%
+Les représentations convolutives extraient des motifs récurrents qui aident à comprendre la structure locale dans un jeu de signaux. Elles sont adaptées pour l'analyse des signaux physiologiques, qui nécessite des visualisations mettant en avant les informations pertinentes. Ces représentations sont aussi liées aux modèles d'apprentissage profond. Dans ce manuscrit, nous décrivons des avancées algorithmiques et théoriques autour de ces modèles.\\[\parskipabstract]
+%
+%
+%Our main contribution in the first part is an asynchronous algorithm, called DICOD, based on greedy coordinate descent, to solve convolutional sparse coding for long signals. Our algorithm has super-linear acceleration. We also explored the relationship of Singular Spectrum Analysis with convolutional representations as an initialization step for convolutional dictionary learning.
+Notre contribution principale dans la première partie est un algorithme asynchrone pour accélérer le codage parcimonieux convolutif, nommé DICOD. Notre algorithme présente une accélération super-linéaire. Nous explorons aussi la relation entre  l'Analyse du Spectre Singulier et les représentations convolutives, comme une étape d'initialisation de ces dernières.\\[\parskipabstract]
+%
+%
+% In a second part, we focus on the link between representations and neural networks. Our main result is a study of the mechanisms which accelerate sparse coding algorithms with neural networks. We show that it is linked to a factorization of the Gram matrix of the dictionary. Other aspects of representations in neural networks are also investigated with an extra training step for deep learning, called post-training, to boost the performances of trained networks by improving their last layer's weights.\\[\parskipabstract]
+Dans une seconde partie, nous analysons les liens entre représentations et réseaux de neurones. Le résultat principal est une étude des mécanismes qui rendent possible l'accélération du codage parcimonieux avec des réseaux de neurones. Nous montrons que cela est lié à une factorisation de la matrice de Gram du dictionnaire. D'autres aspects des représentations dans les réseaux neuronaux sont aussi étudiés à travers une étape d'apprentissage supplémentaire, appelée \emph{post-entraînement}, qui améliore les performances du réseau entraîné.\\[\parskipabstract]
+%
+%
+Finalement, nous illustrons l'intérêt de l'utilisation des représentations convolutives pour les signaux physiologiques. L'apprentissage de dictionnaire convolutif est utilisé pour résumer des signaux de marche et le mouvement du regard est soustrait de signaux oculométriques avec l'Analyse du Spectre Singulier.
+\selectlanguage{british}
+\biblio{}
+\end{document}

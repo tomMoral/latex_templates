@@ -1,0 +1,85 @@
+\definecolor{chaptercolor}{gray}{0.8}
+
+\newcommand\blankpage{
+\newpage\null\thispagestyle{empty}\newpage
+}
+
+\newcommand\chapterwithoutpageskip[1]{
+    \newpage
+    \thispagestyle{empty}
+    
+    $ $
+    
+    \vspace{2cm}
+    
+    
+    \begin{flushright}
+    \chaptitlefont  #1
+    \end{flushright}
+    \vspace{1cm}
+
+}
+
+\newcommand\chapccl[1]{
+	\chapterwithoutpageskip{#1}
+	\addcontentsline{toc}{chapter}{#1}
+}
+
+\newcommand\introPart{
+	\chapterwithoutpageskip{}
+}
+
+\newcommand\chapterwithoutskip[1]{
+    \thispagestyle{empty}
+    \begin{flushright}
+    \chaptitlefont  #1
+    \end{flushright}
+    \vspace{1cm}
+
+}
+
+\setcounter{secnumdepth}{2}
+
+\epigraphfontsize{\small\itshape}
+\setlength\epigraphwidth{6cm}
+\setlength\epigraphrule{0pt}
+\setlength\beforeepigraphskip{0pt}
+\setlength\afterepigraphskip{2\baselineskip}
+
+\newcommand\numlifter[1]{\raisebox{-2cm}[0pt][0pt]{\smash{#1}}}
+\newcommand\numindent{ }
+\newlength\chaptertitleboxheight
+\makechapterstyle{hansen}{
+  \renewcommand\printchaptername{\raggedleft}
+  \renewcommand\printchapternum{
+   \begingroup%
+   \chapnumfont%
+   \thechapter
+   \endgroup%
+    \afterchapternum
+}
+
+ \setlength\midchapskip{0.2cm}
+ \setlength\beforechapskip{0.5\baselineskip}
+  \setlength{\afterchapskip}{0.5\baselineskip}
+  \renewcommand\chapnumfont{%
+    \fontsize{3.5cm}{0cm}%
+    \bfseries%
+    \sffamily%
+    \color{chaptercolor}%
+  }
+  \renewcommand\chaptitlefont{%
+    \normalfont%
+    \huge%
+    \bfseries%
+    \raggedleft%
+  }%
+  \settototalheight\chaptertitleboxheight{%
+    \parbox{\textwidth}{\chaptitlefont \strut bg\\bg\strut}}
+  \renewcommand\printchaptertitle[1]{%
+    \parbox[t][\chaptertitleboxheight][t]{\textwidth}{%
+      \chaptitlefont\strut ##1\strut}%
+}}
+
+\chapterstyle{hansen}
+\aliaspagestyle{chapter}{empty} % just to save some space

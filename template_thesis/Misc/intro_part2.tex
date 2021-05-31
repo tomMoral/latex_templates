@@ -1,0 +1,28 @@
+\documentclass[../thesis.tex]{subfiles}
+\crossref{}
+\begin{document}
+
+
+
+
+	In this part, we analyze the link between deep learning methods and sparse
+	representations. We start by recalling the general framework of deep learning in
+	\autoref{chap:deep_learn}. Then, \autoref{chap:post_training} introduces the post-training
+	step for deep neural networks. This extra learning step can be used after normal
+	training of a network and provides a boost in performance for neural networks by
+	optimizing the last layer of the network. The main idea behind this step comes from
+	analysis which splits deep models between the first layers, learning general representations
+	of the data and the last layers, which solve the specific task. The post-training ensures
+	that the learned representation is optimally used for this task. In \autoref{chap:lista},
+	we analyze the reason why the Learned ISTA models (LISTA) are able to accelerate the
+	resolution of the LASSO problem. LISTA is a model designed to mimic the behavior of ISTA
+	by replacing gradient computations with general linear operations. It is able to solve the
+	sparse coding problem efficiently when the gram matrix of the problem admits a certain
+	sparse factorization. Understanding the theoretical properties is a step to explicit
+	the link between neural networks and dictionary learning models.
+
+
+% section nn:interpretability (end)
+
+\biblio{}
+\end{document}

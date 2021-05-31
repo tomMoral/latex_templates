@@ -1,0 +1,31 @@
+\documentclass[../thesis.tex]{subfiles}
+\begin{document}
+
+\section{Cognac-G and the physiological data}
+\label{sec:adaopt}
+
+
+\subsection{Physiological signals in clinical context}
+
+Clinical research is the part of medical researches that focus on improving diagnosis techniques, treatments security and efficacy. In this context, it can be very important to analyze the physiological effect of a disease on the human body and to quantify it. The physiological data are often easier to acquire than other measurements. Thus having a characterization of a disease based on physiological tests would help detecting it at early stage as it would permits larger screening. Comparing different physiological states and defining the effect of an illness on the body could also lead to finer diagnosis. Moreover, quantification of these effects could permit to measure the progression of the disease and the efficacy of a treatment. The simplicity of the acquisitions would even permit to conduct daily home-made measurements, thus achieving better follow-up for patients.
+
+The Cognac-G team focuses on these questions and particularly on the relationship between patients' movement and their health. Movement can provide very interesting insights on the body structural properties such as neural structures, internal ears functionality or level of degenerative osteoarthritis for joints. It is also possible to measure it in a noninvasive way quite simply, with inexpensive sensors like accelerometers. The ongoing projects range from equilibrium and walk study to eye movement pattern analysis. Doctors already use their eyes to get information from movement of a patient but it requires a lot of experience to perform good diagnosis. Also, it is almost impossible to compare precisely the results of the same patient at different time. Using sensors to quantify it could help with this aspect and provide longitudinal analysis, permitting a better health care handling. Due to the clinical consultation constraints, the measurements should be as simple as possible to be useful. This reduces the possible way to control the clinical protocols, thus providing noisy data sets. For instance,the patient cannot be asked to wear specific kind of shoes, neither can he be wearing fifty individual sensors as the preparation of the exercise would be too long. The automatized comparison between the resulting quantities is thus a real challenge as the data cannot be compared as it is. A normalization procedure has be applied to ensure that we get meaningful quantities.
+
+For the walk quantification, doctors evaluate the patients by making them perform a simple walk exercise. They judge the quality of the walk on different levels. They first control the movement easiness, comparing the patient's gait to the standard behaviour they observe for healthy people. This provides an overall insight of the patient condition. Then, they can look at specific asymmetries to qualify limps or unusual recurring patterns. They usually look at left and right feet differences. On a finer level, they study the evolution of the steps, to see if the patient gets tired, or performs missteps. This evaluation compares the evolution of the walk across time, on specific segments corresponding to steps.
+
+To reproduce this kind of comparison in an automatic setting, a clinical protocol has been defined in collaboration with doctors. A specific exercise is performed with accelerometers to record the movement of the head, the body and the two feet. The patient has to stand still, walk forward, perform a U-turn and come back to the starting point as shown in figure \ref{exo}. The signal is then segmented with manual annotation. To be able to quantify the properties studied by the doctor, we need to be able to compare these signals at different scales. A convenient setting would use a single representation of the signal to define multi-scale comparison metrics. Finding metrics quantifying the signal robustly across each class of patients would permit to use this kind of method in clinical consultations.
+
+\begin{figure}[htp]
+\centering
+\includegraphics[scale=0.5]{exo_marche}
+\caption{Clinical protocol for the walk study}
+\label{exo}
+\end{figure}
+
+
+
+
+% section time_series (end)
+
+\biblio{}
+\end{document}

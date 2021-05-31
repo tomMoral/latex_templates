@@ -1,0 +1,111 @@
+\documentclass[../thesis.tex]{subfiles}
+
+\makeatletter
+\providecommand*{\input@path}{{../}}
+\makeatother
+
+\begin{document}
+
+\chapter*{Conclusion and Perspectives}
+\addcontentsline{toc}{part}{Conclusions and Perspectives}
+\markboth{Conclusion and Perspectives}{}
+
+\epigraph{The most exciting phrase to hear in science, the one that heralds new discoveries,
+		  is not `Eureka!' but `That's funny...'.''}{--- Isaac Asimov}
+
+	Convolutional representations are data-driven tools which can be used to summarize time
+	series and to study their local structures. These methods emerge naturally when trying
+	to understand physiological signals which are often formed with repetitive patterns such
+	as the steps in human locomotion. The first part of this manuscript studies computational
+	aspects of these representations for time series. We showed that for unitary dictionary,
+	it is possible to compute such a representation using the Singular Spectrum Analysis. The
+	decomposition computed with SSA can be used to compute
+	a solution of a convolutional representation problem with dense activations and orthonormal
+	patterns. Since this solution is dense, an extra step is necessary to ensure a good
+	interpretability of the representation. We proposed a general framework to automatize this
+	step which is usually done manually and we presented novel metrics to group the components
+	with this step. Another way to improve the interpretability of this representation is to use
+	sparse activation signals. In this context, we proposed a novel algorithm to solve the
+	convolutional sparse coding. This algorithm runs in both distributed and sequential
+	setting, and it accelerates the resolution of the optimization problem. We proved that
+	this algorithm converges to the optimal solution of the considered problem and that it
+	has a super-linear speed up compared to the greedy coordinate descent. This acceleration
+	is sub-linear compared to the proposed sequential algorithm. The theoretical results
+	were confirmed with numerical experiments. These two works described efficient algorithms
+	to compute interpretable convolutional representations.
+
+	In the second part of this manuscript, we explored the link between deep learning models and
+	signal representations. We first proposed an extra training step, which relies on the idea that
+	the first layers of a network compute a representation of the dataset, to improve the training
+	strategy. This step can be used after the training of a network. The weights of the first
+	layers are fixed and we train the weights of the last layer for a small number of iterations.
+	This improves the way the internal representation -- computed with the first layers -- is
+	used to solve the considered task. This step is connected with results from kernel methods
+	and we showed that this extra step provides consistent performance boost for
+	multiple architectures. Then, we focus on recent works which presented certain optimization
+	algorithms as neural network \citep{Gregor10}. These studies show that some
+	common algorithms for sparse representation can be accelerated using trained neural
+	networks. We presented a theoretical analysis of this acceleration for Learned ISTA (LISTA)
+	networks and linked the acceleration to a quasi-diagonalization of the Gram matrix of the
+	dictionary in a sparse basis. We showed that using this basis, we can derive an efficient
+	algorithm, with same convergence rate than ISTA but potentially better constant factors.
+	This algorithm can be shown to be a re-parametrization of the LISTA network. Thus, LISTA
+	is also able to accelerate the resolution when this factorization exists. Moreover, we
+	designed an adverse example where the factorization was not possible and showed that LISTA
+	also failed to accelerate the resolution on these examples. We also highlight under
+	which conditions the performance of our factorization could be better than those of ISTA,
+	in expectation over the generic dictionaries. With this second part, we study the deep
+	learning models as two parts models, where first layers map the input to internal
+	representations and the last layers compute a statistical model. The post-training
+	ensures that the task-driven representations computed by the first layers are used
+	optimally to solve the considered task. And the aim of the study of LISTA is to highlight
+	the properties of dictionaries for which it is possible to efficiently compute sparse
+	codes with neural networks. Combining these two ideas could help bring more interpretability
+	for deep models.
+
+
+	Finally, we illustrated in the third part some of the results obtained on physiological
+	signals. Robustly extracting the steps from a walk signal is a core block to automatize
+	walk quantification. The early experiments with sparse convolutional dictionary
+	learning for walk signal show that this technique is able to highlight local patterns
+	with an unsupervised algorithm. The computed representation
+	summarizes the signals in an interpretable way: on one side, patterns that look similar
+	to steps and on the other side, activation signals which describe the regularity of the
+	steps taken by the patient. We also presented a novel algorithm to detect steps robustly
+	in walk signals. This algorithm is based on template matching with a step library and
+	was evaluated on over 1000 walk signals, for both healthy and pathological subjects.
+	The walk signal study was used in a medical publication. For eye movement quantification,
+	we developed various tools to help the doctor study the nystagmus movement. We showed that
+	the SSA could be used to remove the trend component from the registered signals and
+	presented two representations which helped the ophthalmologist characterize the type
+	of movement which was recorded. These tools were used to write a communication about
+	the relationship between certain nystagmus and optical path-way gliomas. These two
+	illustrations showed that convolutional representations can be used to highlight
+	interpretable information in a signal.
+
+
+	These different works shed light on the properties of convolutional representations.
+	This model is able to extract local structure in signal with unsupervised methods.
+	All the presented results were produced using an $\ell_2$-norm to compare the original
+	signal with the reconstruction. For some applications, it is not the best way to compare
+	the signals, for instance when the additive noise has some known structure. The recent
+	work of \citet{Gramfort2017} proposed a model using an alpha-stable noise model instead
+	of the Gaussian model, and showed that it was possible to solve it using an EM algorithm.
+	Developing efficient algorithms for other types of noise is an interesting direction for
+	future work. Another issue with the $\ell_2$-norm is that all the channels of the original
+	signal have the same weight. When learning a dictionary for signals with heterogeneous
+	channels, parts of the signal are ignored. Finding the proper
+	way to handle such signals would broaden the possibilities of convolutional dictionary
+	learning. Also, the length of the extracted patterns is chosen manually, by selecting
+	the shapes of the dictionary elements. With the $\ell_2$ norm, small changes in the pattern
+	scales can lead to large distances. Finding a way to extract scale invariant patterns
+	would be useful for studies of unconstrained recording of physiological signals. A
+	possible solution would be to introduce an extra parameter in the model to encode
+	a scaling of the pattern used when it is activated. Using coordinate descent, a
+	greedy algorithm can be used to solve the resulting optimization problem in an
+	efficient manner.
+
+
+
+\biblio{}
+\end{document}

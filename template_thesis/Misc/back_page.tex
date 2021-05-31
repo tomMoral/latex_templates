@@ -1,0 +1,84 @@
+%%%%
+%%
+%%
+%%  Utiliser pdflatex pagedegardetheseEDMH.tex
+%%
+%%
+%%%%
+\documentclass[../thesis]{subfiles}
+\crossref{}
+\frenchspacing
+
+\makeatletter
+\providecommand*{\input@path}{{../}}
+\makeatother
+
+
+\begin{document}
+\def\notitle{}
+
+\clearpage
+\newgeometry{top=0.5cm, left=2cm, right=2cm, bottom=1cm}
+\setlength{\fboxrule}{1.5pt}
+\setlength{\parskipabstract}{0em}
+\thispagestyle{empty}
+%%%
+%%
+%% Quatrième de couverture (last cover page of the memoirs)
+%%
+%%%
+
+\hbox{\includegraphics[width=8.6cm]{ed_edmh-h}}
+
+
+\bigskip
+\selectlanguage{french}
+\fcolorbox{darkred}{white}{
+\parbox[t][.4\textheight]{1\textwidth}{
+\textbf{Titre : }  \TITLE{}
+
+\medskip
+\textbf{Mots Clefs :}  Codage parcimonieux, Apprentissage de dictionnaire convolutif,
+					Signaux Physiologiques, Optimisation adaptive, Apprentissage Profond.
+
+\smallskip
+\begin{multicols}{2}[]
+\textbf{Résumé :}%
+	\subfile{Misc/abstract_fr}
+
+\end{multicols}
+
+
+\vspace{7cm}
+
+}}
+
+\bigskip
+\selectlanguage{british}
+\fcolorbox{darkred}{white}{
+\parbox[t][.4\textheight]{\textwidth}{
+\textbf{Title : }  \TITLEen{}
+
+\medskip
+\textbf{Keys words :}  Sparse Coding, Convolutional Dictionary Learning,
+					Physiological Signals, Adaptive Optimization, Deep Learning.
+
+\smallskip
+
+\begin{multicols}{2}[]
+\textbf{Abstract :}%
+\subfile{Misc/abstract}
+
+\end{multicols}
+
+
+
+\vspace{7cm}
+
+}}
+
+\vfill
+\hfill \includegraphics[width=1cm]{pictoParis-Saclay.jpg}
+
+\end{document}
+

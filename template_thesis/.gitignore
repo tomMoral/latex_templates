@@ -1,0 +1,19 @@
+# ignore some directory
+/appendix
+
+# Some files
+*.swp
+*.eps
+*.pdf
+*.bck
+*zip
+*.bbl
+*.log
+*.fls
+*.blg
+*.out
+*.aux
+*.ptc
+*.synctex.gz
+*.xmpdata
+*.fdb_latexmk

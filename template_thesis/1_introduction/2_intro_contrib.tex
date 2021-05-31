@@ -1,0 +1,327 @@
+\documentclass[../thesis.tex]{subfiles}
+
+\makeatletter
+\providecommand*{\input@path}{{../}}
+\makeatother
+
+\crossref{}
+
+\begin{document}
+
+
+\section{Thesis Contributions}
+\label{sec:intro:contributions}
+
+
+
+\subsection{Summary}
+\label{sub:intro:contrib:academic}
+
+During my Ph.D, I became interested in the issues of representation learning for time-series and interpretability of the learned representations. The convolutional dictionary learning for temporal signals are methods which allow to represent a signal in an intuitive and interpretable way. However, these methods can be complicated to use, due to the large number of parameters that influence them and to their computational cost. On the other hand, neural networks are very effective and solve many tasks in practice but it is very difficult to interpret the obtained results. The joint study of these two model classes and the ties between them can bring new perspectives to reduce the drawbacks of each of these methods.
+
+
+
+
+
+
+%==========================================================
+%       PART I - Convolutional Dictionary Learning
+%==========================================================
+\vskip2em
+In \autoref{part1}, we study models based on convolutional representations and show how to improve their interpretability and computational cost.
+
+
+
+% State of the art CSC
+\paragraph{\autoref{chap:csc}: \nameref{chap:csc}.}
+\label{par:contrib:csc}
+
+The convolutional representation is used to represent time series by extracting patterns which are used to summarize the series variations. This model is interesting in the context of physiological signals which are quasi-periodic, with defined patterns. In \autoref{chap:csc}, we present this model and its sparse version. Then we describe the state-of-the-art algorithms to compute the embedding with this models (see \autoref{sec:csc_algo}) and to update the patterns (see \autoref{sec:dict_update}).
+
+% paragraph contrib:csc (end)
+
+
+
+% Chapter SSA
+\paragraph{\autoref{chap:ssa}: \nameref{chap:ssa}.}
+\label{par:contrib:ssa}
+
+The Singular Spectrum Analysis (SSA) is a technique used for short and noisy signal analysis. This technique extracts sub series from the original series and studies them using PCA. The principal components can be used to compute a decomposition of the signal with low-rank components, tied to the trend and seasonality of the studied signal. To improve the interpretability of the extracted components, the SSA requires a manual step which groups the raw components of the resulting decomposition. In \autoref{chap:ssa}, we make the following contributions.
+
+\begin{itemize}\itemsep.2em
+	\renewcommand{\labelitemi}{\raisebox{-.1em}{\color{linkcolor!50}$\blacktriangleright$}}
+
+	\item We show with \autoref{thm:ssa:eq_csc_ssa} that this method solves a convolutional
+	representation optimization problem, with dense activation, and we highlight the properties
+	of the learned patterns. This shows that the SSA can be used to compute efficiently the
+	solution of the non-convex problem of convolutional dense dictionary learning, for
+	a certain class of orthogonal dictionaries.
+
+	\item We describe a general unified framework to automate the grouping step
+	in \autoref{sec:ssa:grouping}. In addition, we propose two novel similarity
+	measures to compare the components (\textbf{GG3} and \textbf{HGS}) and a new
+	group formation scheme based on the importance of each component, named
+	hierarchical method (\textbf{HM}). These novel grouping strategies are
+	compared to the methods proposed in the literature on generated signals.
+
+\end{itemize}
+
+% paragraph contrib:ssa (end)
+
+
+
+% Chapter DICOD
+\paragraph{\autoref{chap:dicod}: \nameref{chap:dicod}.}
+\label{par:contrib:dicod}
+
+The greedy coordinate descent can be used to solve the convolutional sparse coding. At each iteration, this algorithm updates the coordinate which is the farthest from its optimal value given all the other coordinates are fixed. It converges to the optimal solution and for large signal, numerical results show that it requires less iterations than its randomized counter part. We present the following contributions in \autoref{chap:dicod}.
+
+\begin{itemize}\itemsep.3em
+	\renewcommand{\labelitemi}{\raisebox{-.1em}{\color{linkcolor!50}$\blacktriangleright$}}
+
+	\item We introduce in \autoref{sec:dicod:dcp}, DICOD, a novel distributed algorithm, based
+	on the greedy coordinate descent to solve the convolutional sparse coding. This
+	algorithm is communication efficient and can run asynchronously.
+
+	\item We also describe a sequential algorithm, called SeqDICOD. This algorithm is
+	designed to run sequentially the updates made by DICOD. In this setting the updates
+	are locally greedy. This reduces the computational cost of the updates compared to
+	the greedy coordinate descent.
+
+	\item In \autoref{sec:analysis}, we establish the convergence of DICOD with
+	\autoref{thm:conv_dcp}, under mild condition on the dictionary elements. We
+	also show in \autoref{thm:speedup} that the computational acceleration of
+	DICOD is super-linear compared to the greedy coordinate descent.
+	\autoref{thm:speedup:SeqDICOD} shows that this acceleration is only sub-linear
+	compared to our new locally greedy algorithm SeqDICOD.
+
+	\item Finally, we demonstrate in \autoref{sec:dicod:numerical} that these two algorithms
+	work well in practice. We also confirm in \autoref{fig:dicod:scaling} that the computational
+	acceleration of DICOD compared to greedy CD is quadratic when the number of cores is small
+	enough.
+
+\end{itemize}
+
+% paragraph contrib:dicod (end)
+
+
+
+
+
+
+%==========================================================
+%       PART II - Deep learning
+%==========================================================
+\vskip2em
+Then, in \autoref{part2}, we focus deep learning models and their internal representations aiming to improve their interpretability.
+
+
+
+% State of the art Deep
+\paragraph{\autoref{chap:deep_learn}: \nameref{chap:deep_learn}.}
+\label{par:contrib:deep_learn}
+
+The Deep Learning models have improved the state-of-the-art performance for many tasks where signals are involved, such as images or audio signal processing. But these techniques are often seen as black boxes and provide little intuitions on their decision process. A key aspect is the lack of interpretability of their internal representation. \autoref{chap:deep_learn} starts by recalling the general framework of deep learning and some of its theoretical properties. Then, we review recent results on neural network interpretability.
+
+% paragraph contrib:deep_learn (end)
+
+
+
+% Chapter post-training
+\paragraph{\autoref{chap:post_training}: \nameref{chap:post_training}.}
+\label{par:contrib:post_traing}
+
+During the training of a neural network, all the weights are updated together using an estimate of the gradient. For the end-to-end model, this adapts the representation learned by the first layers to the model solving the task at hand, which is computed in the last layers. At the end of the training, the model is considered to have learned both a good representation and a good model solving the task. The contributions made in \autoref{chap:post_training} are the following.
+
+\begin{itemize}\itemsep.3em
+	\renewcommand{\labelitemi}{\raisebox{-.1em}{\color{linkcolor!50}$\blacktriangleright$}}
+
+	\item We propose in \autoref{sec:post_train:contrib} an extra training step, called
+	\emph{post-training}, where the representation learned during training is fixed and
+	we optimize the last layer. This extra step aims to improve the usage of the learned
+	representation to solve the considered task.
+
+	\item We propose a justification of our method based on the interpretation of neural
+	network as a kernel method in \autoref{sec:post_train:kernel}.
+
+	\item We show in \autoref{sec:post_train:numerical} that this extra step provides a
+	small performance boost for many network architectures, from convolutional networks to
+	recurrent networks, and with different data sets.
+
+\end{itemize}
+
+% paragraph contrib:post_train (end)
+
+
+
+% Chapter LISTA
+\paragraph{\autoref{chap:lista}: \nameref{chap:lista}.}
+\label{par:contrib:lista}
+
+Some recent works have shown that it was possible to accelerate the resolution of the LASSO problem using a trained neural network to estimate the optimal solution. This study relies on the interpretation of the ISTA algorithm as a recurrent neural network, which can be unfolded $K$ times to represent $K$ iterations of the algorithm. The findings were backed by some interesting empirical results which showed that using the same number of ISTA iterations as the number of layers in the trained network was less efficient. In \autoref{chap:lista}, we make the following contributions.
+
+\begin{itemize}\itemsep.3em
+	\renewcommand{\labelitemi}{\raisebox{-.1em}{\color{linkcolor!50}$\blacktriangleright$}}
+
+	\item We design in \autoref{sec:lista:facto} an algorithm based on a factorization of
+	the Gram matrix of the LASSO problem. This algorithm updates have the same computational
+	cost as the iteration of ISTA. We show that the performances of this algorithm are
+	linked to the sparsity of this factorization (see \autoref{prop:lista:cost_update}).
+
+	\item We show with \autoref{thm:conv_rate} that this algorithm has the same convergence
+	rate as ISTA but with possibly better constant factors.
+
+	\item In \autoref{sec:lista:gap}, we highlight with \autoref{thm:certif} the conditions
+	under which the performance of our factorization based algorithm are better than ISTA,
+	in expectation for generic dictionaries.
+
+	\item \autoref{sec:lista:networks} shows that our algorithm can be computed with a
+	neural network called FacNet. This network is a re-parametrization of LISTA, with a
+	more constrained parameter space. This shows that when FacNet is able to accelerate
+	the resolution of LASSO, LISTA can also accelerate it. Thus, our results are sufficient
+	to explain the acceleration of LISTA.
+
+	\item Finally, we design in \autoref{sec:lista:numerical} an adversarial dictionary
+	for which FacNet does not accelerate the resolution of the LASSO compared to ISTA.
+	The results show that the performances
+	of LISTA networks for this problem are also reduced. This empirical result suggests that
+	our analysis captures part of the mechanism at work in the LISTA acceleration.
+
+\end{itemize}
+
+% paragraph contrib:lista (end)
+
+
+
+
+
+
+%==========================================================
+%       PART III - Physiological Signals
+%==========================================================
+\vskip2em
+\autoref{part3} presents some chosen results of physiological signal analysis. During my PhD, I have collaborated with medical doctors for clinical research purposes, developing tools to help them analyze physiological signals. This collaboration has been centered around two projects: the study of human walking and the study of nystagmus eye movements of young infants.
+
+
+
+% Chapter walk
+\paragraph{\autoref{chap:walk}: \nameref{chap:walk}.}
+\label{par:contrib:walk}
+
+The quantification of human locomotion based on inertial sensors could change the way doctors follow their patients. By definition, walking is a repetitive movement, were the building block is the step. The extraction of the local structure in the signal enables the study of the regularity or the asymmetry of the signal. Thus, being able to robustly identify the steps in a walk exercise is critical to analyze the gait of the patient. In \autoref{chap:walk}, we present the following contributions.
+
+\begin{itemize}\itemsep.3em
+\renewcommand{\labelitemi}{\raisebox{-.1em}{\color{linkcolor!50}$\blacktriangleright$}}
+
+	\item In \autoref{sec:walk:csc}, we apply the convolutional representations described
+	in \autoref{chap:csc} to signals of human walking. Preliminary results show that convolutional
+	dictionary learning is able to identify local structures in the signals.
+
+	\item We present a novel technique to robustly detect the steps in signals of human walking
+	\citep{Oudre2015}. This technique relies on a base of steps templates to identify the start
+	of a step. The algorithm identifies the steps robustly for healthy and pathological subjects.
+
+	\item This study was associated to the analysis of signals from human walking with medical doctors
+	in various studies, like \citet{Barrois2015} and \citet{Barrois2016}. We briefly present
+	our study in \citet{Barrois2015}, which is included in the annex.
+
+\end{itemize}
+
+% paragraph contrib:walk (end)
+
+
+
+% Chapter Oculo
+\paragraph{\autoref{chap:gaze}: \nameref{chap:gaze}.}
+\label{ssub:contrib:oculo}
+
+Neuro-ophthalmology is a field which studies the relation between the nervous system and the ocular system. The study of eye movements is particularly interesting as it sheds light on the control mechanisms between these two systems. In this thesis, we studied a particular type of eye movements, called the nystagmus, in early infancy. These movements are associated to various conditions which can be detected when the nystagmus is correctly classified. In \autoref{chap:gaze}, the following contributions are described.
+
+\begin{itemize}\itemsep.3em
+	\renewcommand{\labelitemi}{\raisebox{-.1em}{\color{linkcolor!50}$\blacktriangleright$}}
+	\item We showed that the Singular Spectrum Analysis (SSA) can be used to pre-process
+	oculometric signals and to extract the eye movements linked to the nystagmus syndrome.
+
+	\item We developed signal processing tools to analyze characteristics of the nystagmus syndrome
+	to improve the doctor diagnosis.
+
+	\item These tools were used for three studies: a communication at the Gordon
+	conference  on eye movement \citep{Robert2015}, a study on the nystagmus associated to
+	optical path-way gliomas \citep{Robert2016} and a study on the nystagmus for children
+	with Down Syndrome.
+\end{itemize}
+	
+% subsubsection contrib:walk (end)
+
+% subsection sub:intro:contrib:academic (end)
+
+
+
+
+
+
+%==========================================================
+%      Open-source contribution
+%==========================================================
+\subsection{Opensource development}
+\label{sub:intro:contrib:oss}
+
+During the second and third year of my PhD, I was involved in an open-source development projects, supported by the Center for Data Science, funded by the IDEX Paris-Saclay, ANR-11-IDEX-0003-02.	The aim of the project was to provide a backend for the library \code{joblib}. \code{joblib} is a popular python library to easily parallelize scientific computations, as it provides simple support to embarrassingly parallel computation, where each process can perform independent computations and the results are also returned independently.
+
+With Olivier Grisel, we developed \code{loky} to provide a robust, cross-platform and cross-version implementation of the \code{concurrent.futures.ProcessPoolExecutor} class. It notably features:
+
+\begin{itemize}
+	\item \textbf{Deadlock free implementation:} one of the major concern in
+	standard\linebreak[4]\code{multiprocessing} and \code{concurrent.futures} libraries is the
+	ability of the\linebreak[4]\code{Pool/Executor} to handle crashes of worker
+	processes. This library intends to fix possible deadlocks and send back meaningful
+	errors in these situations.
+
+	\item \textbf{Consistent spawn behavior:} All processes are started using
+	fork/exec on POSIX systems. This ensures safer interactions with
+	third party libraries.
+
+	\item \textbf{Reusable executor:} strategy to avoid respawning a complete
+	executor every time. A singleton executor instance can be reused (and
+	dynamically resized if necessary) across consecutive calls to limit
+	spawning and shutdown overhead. The worker processes can be shutdown
+	automatically after a configurable idling timeout to free system
+	resources.
+
+	\item \textbf{Transparent \code{cloudpickle} integration:} to call interactively
+	defined functions and lambda expressions in parallel. It is also
+	possible to register a custom pickler implementation to handle
+	inter-process communications.
+
+	\item \textbf{No need for \code{if \_\_name\_\_ == "\_\_main\_\_":} in scripts:} thanks
+	to the use of \code{cloudpickle} to call functions defined in the
+	\code{\_\_main\_\_} module, it is not required to protect the code calling
+	parallel functions under Windows.
+
+\end{itemize}
+
+% subsection intro:contrib:oss (end)
+
+% section intro:contributions (end)
+
+
+
+
+
+
+%==========================================================
+%       Publications
+%==========================================================
+\section{Publications}
+\label{sec:intro:publications}
+
+The different work presented in this document resulted in various publications and communications:
+
+\subfile{Misc/publications}
+
+
+% section intro:publications (end)
+
+
+\biblio{}
+\end{document}

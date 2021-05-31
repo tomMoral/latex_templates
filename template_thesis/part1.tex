@@ -1,0 +1,108 @@
+\documentclass[
+	a4paper,
+	twoside,	% recto-verso printing
+	openright,  % chapters begin on recto
+	chapterprefix=false,
+	11pt,
+	headings=big,
+	draft=false,
+	oldfontcommands]{memoir}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%		Add styling files with extra macro
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Declare style in option
+% Available style are {plain, NIPS, ICLR, JMLR, thesis}
+\usepackage[thesis]{shortcut}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%		Subfile management
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% Macro for subfile handeling
+\graphicspath{{./figures/}, {../figures/}}
+\def\TikzLocation{../tikz/}
+\def\BibFile{../library.bib}
+\newcommand\setchap[1]{\setcounter{chapter}{#1}}
+\usepackage{bibentry}
+\nobibliography*
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%		Add styling files with extra macro
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\IfFileExists{Style/margins.tex}{
+	\input{Style/margins}
+	\input{Style/chapters}
+	\input{Style/headings}
+	\input{Style/subappendix}
+}{
+	\input{../Style/margins}
+	\input{../Style/chapters}
+	\input{../Style/headings}
+	\input{../Style/subappendix}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%				Xref in subfiles
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{xr}
+\externaldocument{/home/tom/.cache/gummi/.appendix.tex}
+\def\crossref{\externaldocument{/home/tom/.cache/gummi/.thesis.tex}}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%		Define some length
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newlength{\parskipabstract}
+\setlength{\parskipabstract}{\parskip}
+
+% No page break if less than 3 line in a paragraph
+\clubpenalties 3 10000 10000 0
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%		Define double page geometry
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newgeometry{top=3.5cm, inner=4cm, outer=2.5cm, bottom=2.5cm}
+
+
+
+
+\begin{document}
+\def\biblio{}
+\def\cbiblio{}
+\def\crossref{}
+\def\TikzLocation{./tikz/}
+
+
+\setcounter{chapter}{2}
+
+\part{Pattern-based Time Series Representation}
+\label{part1}
+
+
+\introPart{}
+\subfile{Misc/intro_part1}
+
+
+\subfile{2_sota_csc/sota_conv_sc}
+\subfile{3_ssa/chapter2}
+\subfile{4_dicod/chapter3}
+
+
+% References
+%\nocite{*}
+\bibliographystyle{\Bibstyle}
+\bibliography{library}
+
+
+%\subfile{appendix/appendix.tex}
+
+\end{document}

@@ -1,0 +1,22 @@
+\documentclass[../thesis.tex]{subfiles}
+\begin{document}
+%
+%
+\ifthenelse{\isundefined{\notitle}}{
+\chapterwithoutpageskip{Abstract}}{}
+%
+%
+Convolutional representations extract recurrent patterns which lead to the discovery of local structures in a set of signals. They are well suited to analyze physiological signals which requires interpretable representations in order to understand the relevant information. Moreover, these representations can be linked to deep learning models, as a way to bring interpretability in their internal representations. In this dissertation, we describe recent advances on both computational and theoretical aspects of these models.\\[\parskipabstract]
+%
+%
+Our main contribution in the first part is an asynchronous algorithm, called DICOD, based on greedy coordinate descent, to solve convolutional sparse coding for long signals. Our algorithm has super-linear acceleration. We also explored the relationship of Singular Spectrum Analysis with convolutional representations, as an initialization step for convolutional dictionary learning.\\[\parskipabstract]
+%
+%
+In a second part, we focus on the link between representations and neural networks. Our main result is a study of the mechanisms which accelerate sparse coding algorithms with neural networks. We show that it is linked to a factorization of the Gram matrix of the dictionary. Other aspects of representations in neural networks are also investigated with an extra training step for deep learning, called post-training, to boost the performances of trained networks by improving their last layer's weights.\\[\parskipabstract]
+%
+%
+Finally, we illustrate the relevance of convolutional representations for physiological signals. Convolutional dictionary learning is used to summarize signals from human walking and Singular Spectrum Analysis is used to remove the gaze movement in young infant's oculometric recordings.
+	
+
+\biblio{}
+\end{document}

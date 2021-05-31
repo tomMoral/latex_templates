@@ -1,0 +1,188 @@
+\documentclass[../thesis.tex]{subfiles}
+\crossref{}
+\begin{document}
+
+
+\section[Thesis Motivations: Understanding Time Series]{Thesis Motivations: Understanding Time Series%
+							\sectionmark{Thesis Motivation}}
+\sectionmark{Thesis Motivation}
+\label{sec:context}
+
+\subsection{Continuous Monitoring with Temporal Signals}
+\label{sub:intro_ts}
+
+
+
+%% Application
+In the last decades, there has been an explosion of the number of sensors, which record more and more information about our environment, our activity and our behavior. When navigating the web, many companies record the visited URLs, the time spent on each page or even the movement of the mouse on these pages. In cities, sensors are installed to record quantities of information about the environment or the population. Public transit badges track the daily travels of millions of people each day and CCTV cameras record hours of video surveillance in the streets. After being recorded, all these data are stored in huge data centers around the world, but little information is extracted from it. These signals which trace the evolution of many aspects of our daily life are not well understood. For CCTV cameras, even if automated methods are able to extract the content of a scene, human intervention is still needed to understand it and to highlight potential threats. Indeed, the understanding of long multivariate signals is a very complex task. It requires real-time analysis of the events, characterization of normal behaviors and abnormalities detection. For all these tasks, studying the statistical properties of the recorded data is often not enough. The mean or the variance of temporal series characteristics are often not sufficient to distinguish the differences between signals. There is a need for tools specially designed to understand the temporal structures in signals. The design of these tools is expected to come from an interdisciplinary effort as they shall combine techniques from machine learning, signal processing and pattern recognition augmented by the knowledge of experts, from marketing professionals, to climatologists or medical doctors.
+
+
+%% Medical cognac-G
+The medical field is a good example of a domain where understanding the signals could lead to many applications. Human motion is a complex process, which requires the coordination of many muscles. Different pathologies impact the ability of a patient to walk and neurologists or ENT specialists are able to detect and distinguish these very subtle differences in gaits using their eyes. For instance, a neurologist is able to diagnose neural disorders -- such as the Parkinson syndrome -- by looking at a patient walking. He looks at different levels of details, from the easiness in the motion to the potential asymmetries between the sides. Finally, he follows the gait evolution during the exercise to quantify if the patient is getting tired. With this multi-scale observation, the doctor gets qualitative information about the patient condition. A trained specialist is able to judge a patient very quickly and to provide adequate care. With the development of inertial sensors, it is now possible to record the gait of patients walking. Being able to quantify the information perceived by the doctor using these recorded signals is a real challenge. The first step to tackle this challenge is to understand the signal. Intuitions of the doctors can rarely be transposed directly as signal properties. To allow the experts to find relevant characteristics of the signal based on their knowledge and understanding of the studied phenomenon, it is necessary to use comprehensive representations of the signal which highlights some parts related to physical movement. Representations based on the localization of local patterns, such as steps, are interpretable in the sense that the regularity of the representation can directly be linked to the regularity of the walk of the subject.
+
+
+% Physiological signals and interpretability
+During my PhD, I have collaborated with Cognac-G, a research team that brings together machine learning researchers and medical doctors, to study the quantification of human and animal behavior. To that aim, several experimental protocols have been defined for a wide range of clinical problems from mice breathing or human locomotion to young infant eye movements. Each protocol provides an objective quantification of the phenomenon of interest through the use of sensors, that record univariate or multivariate time series known as physiological signals. Electrocardiogram (ECG) for the heart or electroencephalogram (EEG) for the brain are well known examples of such signals. The first challenge consists in extracting relevant information from these signals, in order to interpret them and to help understand the physiological, biological or bio-mechanical mechanisms that produced them. The second challenge is to automate the quantification process in order to provide tools that can be used by doctors for the longitudinal follow-up and the inter-individual comparison of their
+patients.
+	
+
+
+The aim of this thesis is to provide and study statistical tools that answer both these challenges.
+
+% subsection intro_ts (end)
+
+
+
+\subsection[Comparing Time Series: Discrepancy Quantification and\\Interpretability]{%
+			Comparing Time Series: Discrepancy Quantification and\linebreak[1]Interpretability}
+\label{sub:ts_stat}
+
+
+\subsubsection{No Natural Distance for Time Series}
+\label{ssub:ts:no_dist}
+
+
+For vector data, most distances use coordinate-wise comparison of the data samples, as it is the case for the Euclidean distance. These similarity measures are not well suited for time series as there is no natural way to match the time samples from one series to another. Indeed, if the time series result from measurements acquired with setups that are not very constrained, the length and phase of the sequences are subject to many variations. This makes it unclear which time samples should be compared together.
+
+
+
+% DTW
+The dynamic time wrapping technique, introduced by \citet{Sakoe1971} computes the best alignment between two signals, based on a given metric to compare each time sample. The advantage of this distance is that it automatically aligns the compared time series. It is also possible to compare signals with different length. DTW relies on dynamic programming and the Bellman's equations \citep{Bellman1952} to compute efficiently the alignment which minimizes the discrepancy between the series. The minimum value defines a distance between signals which can be used to extend vector methods like the $k$-nearest neighbors or the SVM classifier. Also, relaxations of this problem -- using smoothed Bellman's equations -- have been proposed to define smoothed distances \citep{Bahl1975} or kernels \citep{Saigo2004}.
+
+
+This class of distances, based on the computation of an alignment between signals, can be used to extend classic machine learning technique to time series. However, the computational cost of the distance between two signals of length $T_1$ and $T_2$ is proportional to their product \ie{} $\bO{T_1T_2}$. This cost becomes expensive for long series and hinders the usage of DTW. Also, as this distance is not differentiable, some vectorial distances cannot be adapted to use it. This motivated recent work by \citet{Cuturi2017} which proposed an algorithm to compute the gradient of the soft-DTW with the same complexity as the distance computation $\bO{T_1T_2}$, opening interesting research opportunities.
+
+
+% Curse of dimension
+Another challenge is that time series can be very long. Considering them as vectors embeds them in a high-dimensional space. As the dimension increases, the pair-wise comparison distances between samples gets less informative as all points tend to be at the same distance, due to the averaging effect of the dimension. This observation, called curse of dimensionality, makes it less effective to compare long time series with time wise distance, even when it is possible to align them. Thus, it is necessary to use statistical tools specifically designed to compare signals. The existing approaches can be classified in two categories. The first approach is to compare the signals using properties that are chosen \emph{a priori}. These methods, called here property-based comparison, are very interpretable as we know the compared properties. The discrepancy between two signals can be linked to different characteristics of these signals. The second approach is to use end-to-end models, such as neural networks. These models take the raw signal as an input and integrate the extraction of information in the model. Here, the comparison is based on unknown properties, which are chosen directly from the data. This type of models tends to have better performances in practice on given tasks but are less interpretable, as the compared properties are unknown.
+
+% subsubsection ts:no_dist (end)
+
+
+\subsubsection{Property-based Comparisons}
+\label{ssub:ts:feat_comp}
+
+\CHANGES{
+
+A high level approach to signal comparison is to compare specific properties extracted from the signals. For instance, the periodicity or linearity of signals can be quantified and used to determine how similar they are to each other. Using these two global properties, a waveform will be closer to another waveform with similar frequency than to a linear signal. Many properties of the signal can be quantified and the distance between two signals is computed by comparing these features using property-wise distances. Examples of such simple features include the Fourier coefficients, the linear regression coefficients or global statistics such as the mean and variance of the signal.
+
+
+
+More advance signal models such as Linear Dynamic Systems (LDS) or Hidden Markov Models (HMM) can also be used to compare time series. The model parameters estimated for a signal can be used as quantifiers of signal properties. While these models are different from classical feature extractors, they also quantify properties chosen in a data-agnostic setting and can thus be considered as property-based comparisons. In this case, the metric used to compare the model parameter needs to be adapted. For instance the parameter-space for LDS can be non-euclidean and the distance need to be carefully selected. The definition of suitable distances for such space has been studied since the 70s using the Riemannian framework \citep{Krishnaprasad1983}. Recently, computationally efficient approaches have been proposed. The Martin distance \citep{Martin2000} is an algebraic metric between two processes which can be linked to subspace angles between the models \citep{DeCock2002}. Other approaches in the machine learning communities have been proposed to compare LDS such as the Binet-Cauchy kernels \citep{Vishwanathan2007}, the alignment distance \citep{Afsari2012} and the KL-divergence \citep{Chan2005}.
+
+
+
+One challenging problem for the property-based comparison is to be able to reliably quantify the selected properties for the studied set of signals. Indeed, the estimation of global features for a set of signals can be unstable, especially when these signals are non-stationary, noisy or heterogeneous. Signal processing tools are rarely designed to handle heterogeneous populations of signals which appear in many applications and the selection of the correct parameters requires manual tweaking to work on all signals in the database. For statistical time series models, like ARMA, the presence of outliers in the set can also lead to unstable results, as they do not verify the model's hypothesis. The automatization of the property extraction can require domain knowledge and a lot of engineering.
+
+
+
+Another challenge of this method is the selection \emph{a priori} of the properties to include in the comparison. This decision has to be done manually and is critical for the performance of the statistical models based on these comparisons. In many cases, the comparison elements are unknown and the extracted properties are designed using some trial and error methods to find the features that best capture the intrinsic properties necessary for the considered task. This process, called \emph{feature engineering}, can be a very long and tedious process and requires expert knowledge to get an intuition about the critical properties that need to be quantified.
+
+
+
+For activity recognition from inertial sensors recordings, certain features have been developed such as measurements in certain frequency bands of the signals \citep{Oudre2012}. These features are specifically validated to distinguish the signals from a human walking from a human running or biking. Thus, they cannot be reused to classify the same type of data for different activity such as swimming or rowing without a novel validation step. A better known example can be found in image processing. Local descriptors -- such as the Scale-Invariant Feature Transform (SIFT; \citealt{Lowe1999}) or the Histogram of Gradient (HOG; \citealt{Dalal2005}) -- have been designed to measure the local variation of the intensity in the image in order to be invariant to specific image transformations. Using these metrics, it is possible to define similarity measures between local patches in images for object recognition. These features have been refined over the decade following their development by multiple advances in the fields -- such as GLOH \citep{Mikolajczyk2005}, SURF \citep{Bay2008} or GF-HOG \citep{Hu2010}. But these features, which are well suited for images, are not directly usable for other applications with non image signals. While some can be adapted for new usages -- such as 3D-SURF developed for 3D data \citep{Knopp2010} or image descriptors applied to time-frequency representations of audio signals \citep{Zhu2010, Rakotomamonjy2015} -- the resulting features must be validated as new features. Even for the same kind of signals, the choice of features can be task-dependent. As the feature selection and validation is time consuming, property-based comparisons are less practical than methods which automatically select the comparison properties.
+
+
+
+A possible solution to select characteristic properties when there is no insight on the properties of interest is to use the \emph{bag-of-features} approach. This technique is inspired by the bag-of-word model \citep{Harris1954} used in Natural Language Processing (NLP) and has been used for instance with images in \citet{Qiu2002}. The idea is to quantify the largest set of properties possible, and then proceed to feature selection with methods such as LASSO \citep{Tibshirani1996}. Here, the properties can be selected in a supervised setting, to be specifically adapted to the considered task, or in an unsupervised setting to capture enough information in the signals to be able to generate them. The selection process is critical for the interpretability of the comparison, as it selects few properties that are judged important for the task at hand. It relies on the same principles as the property-based comparison but does not manually select the features. This technique has been extended in the context of activity recognition in videos with the bag of spatio-temporal features \citep{Schuldt2004}.
+
+}
+% subsubsection ts:feat_comp (end)
+
+
+
+\subsubsection{End-to-end Models}
+\label{ssub:intro:endtoend}
+
+
+
+Another efficient technique to compare signals is to design end-to-end models. This type of model is operating directly on raw signals and integrates a part that computes a representation for each data sample. During the training phase, the representation is learned simultaneously with the parameters for the model solving the task. Typical end-to-end models are the deep neural networks (see \citealt{Goodfellow2016} and references therein). Neural networks compute successive internal 
+%
+\CHANGES{
+Dictionary learning algorithms can have better interpretability, in particular for physiological signals. These signals are often composed of repeated patterns. For instance, electrocardiogram signals (ECG) can have very regular patterns, as presented in \autoref{fig:intro:ecg}. These patterns have a medical signification as they are linked to different phases of an heartbeat. In the figure, starting positions of the heartbeats are manually annotated and the bottom left part presents all the extracted patterns. We can see that the variation between the extracted patterns of heartbeat and the mean pattern in the bottom right part of the figure are small. Convolutional dictionary learning techniques could be used to extract these patterns automatically and robustly, in order to facilitate the study of the heart-rate. For this simple example, the extraction of the repeated patterns seems trivial but it remains challenging for full signals which can be heterogeneous, have noise or trends which alter the patterns and have different amplitude. For other physiological signals such as accelerometer data recorded from a human walking in \autoref{fig:intro:csc_walk} or the eye position of an infant with a nystagmus presented in \autoref{fig:intro:csc_oculo}, the patterns learned with convolutional dictionary learning can be interpreted as specific movement from the body. Here, the task is more complex than with ECG as the shapes have more variations, which can be due to different phases in a recording or to pathologies. In this sense, the convolutional dictionary learning extracts interpretable representations for physiological signals as it learns patterns that can be linked to specific physical phenomenons. The representation of a signal on this set of learn patterns permits to naturally study the regularity of these phenomenons as well as their local variations.
+
+
+
+}
+
+
+
+Another issue with end-to-end techniques is that most optimization problems for statistical learning become non-convex when the representation and the statistical model based on it are jointly learned. The theoretical guarantees for these models are not well understood and they do not always converge, but recent works show that it is possible to guarantee the convergence of the training under certain conditions \citep{Agarwal2013, Haeffele2015, Haeffele2017}. In practice, these models can be trained when the training set is large enough, with limited noise on the labels. Recently, a lot of attention has been focused on understanding the generalization properties of neural networks, notably using the generalization properties of invariant classifiers \citep{Sokolic2017}, margin preservation properties of neural networks \citep{Sokolic2016} or the regularization properties of learning algorithms \citep{Neyshabur2015, Keskar2017, Neyshabur2017a}.
+
+
+
+% subsubsection intro:endtoend (end)
+
+% subsection ts_stat (end)
+
+
+
+\subsection[Extracting Information: Fixed Representations and\\Empirical Dictionaries]{%
+			Extracting Information: Fixed Representations and\linebreak[1]Empirical Dictionaries}
+\label{sub:intro:ts_rpz}
+
+A representation is a visual way to summarize a series, in order to investigate its properties. Finding representations that highlight the main variance sources for a set of signals is very important, both for property-based comparisons and for end-to-end models. Indeed, discriminant representations help to select the relevant properties to extract to compare signals. For end-to-end models, the decision process can be studied with such representation, in order to make it more interpretable. We describe in the following different representation methods for time  series.
+
+
+
+\subsubsection{Global Representations}
+\label{ssub:intro:rpz:global}
+
+\begin{figure}[tp]
+	\centering
+	\includegraphics[width=\textwidth]{intro_rpz/fourier_rpz}
+	\caption{Comparison of 3 signals for temporal representation (\emph{left}) and Fourier representation (\emph{right}). With the temporal representation, signals $X^{(2)}$ and $X^{(3)}$ appear to be more similar but in the Fourier domain, $X^{(3)}$ is also close to $X^{(1)}$.}
+	\label{fig:intro:fourier_rpz}
+\end{figure}
+
+
+
+The most common representation of a temporal signal is a plot where the values are displayed against time. This kind of plots are useful because they are very general and, as we are very used to it, we can easily detect specific properties of the signal. Indeed, we recognize many properties of the signals from their plots when we see them, such as linearity, periodicity, stationarity, recurrent patterns, artifacts or ruptures. Also, experts are able to extract a lot of information from this representation. For instance, cardiologists are able to diagnose some disease by observing at electrocardiogram (ECG) signals. But this canonical representation becomes less informative when no clear shape is present in the signal, for instance in presence of noise.
+
+
+
+Another common representation for signals is the Fourier spectrum of the signal. This representation reveals the harmonic properties of the series and attenuates the noise. \autoref{fig:intro:fourier_rpz} shows an example of 3 signals represented using temporal and Fourier representations. With the temporal representation, the two noisy signals $X^{(2)}$ and $X^{(3)}$  appear to be the most similar. But using the Fourier representation, it can be seen that $X^{(3)}$ has an harmonic component with the same frequency as $X^{(1)}$. With the Fourier representation, we can thus see that $X^{(3)}$ is the sum of the same harmonic component as in $X^{(1)}$ and a noise term similar to $X^{(2)}$. This example shows that it is important to carefully select the representation used to study a set of series as the compared properties are linked to this representation. Looking at these representations of the signal, we access global properties that can then be quantified to globally distinguish the signals and their similarity.
+
+
+% subsubsection intro:rpz:global (end)
+
+
+
+\subsubsection{Extracting Local Structure}
+\label{subs:intro:rpz:local}
+
+
+\begin{figure}[tp]
+	\centering
+	\includegraphics[width=\textwidth]{intro_rpz/stft}
+	\caption{Different representations for signal $X[t] = \sin\left(\frac{(t+2)t}{2}\right) + \epsilon[t]$ with $\epsilon$ a white noise. (\emph{top left}) Temporal representation, (\emph{top right}) Fourier representation and (\emph{bottom}) Spectrogram.
+	}
+	\label{fig:stft}
+\end{figure}
+
+
+For non-stationary and noisy series, global properties of the signal are not very informative and might even be hard to estimate correctly. For instance, the estimation of the Fourier spectrum of non-stationary signal is unstable and it is hard to extract the relevant harmonics. The relevant information is thus contained in the local structures of the signal. To capture these structures, methods that analyze the signal locally are needed. A natural extension to the Fourier representation to local structure analysis was proposed in \citet{Gabor1946}, and later developed as the Short-Time Fourier Transform (STFT). This analysis uses Fourier Transform on windowed sub-series of the original signal. The information is not aggregated, but presented as a function of the time and the frequency and it reveals the transient structure in the signal. \autoref{fig:stft} shows that this representation highlights the variation of the frequency structure of the series, which was not visible at all on its spectrum. The idea of using global analysis on portions of the signal has been a popular way to represent a signal. For instance, piecewise linear approximations (PLA) quantify the linearity of sub-segments of the original signal to reduce its complexity (see \citealt{Keogh2001} and references therein). Another example of representation which study the local structure in the signal is the wavelet transform. The most common wavelet analysis computes a sparse representation of the signal, which concentrate the information around the discontinuities of the signal (see \citealt{Mallat2008} and reference therein). As this transform is multi-scale, it reveals phenomenons which have different time spans. Note that this transform have been extended as a multi-layer analysis with the scattering transform \citep{Mallat2012}. But all these representations analyze specific properties, known \emph{a priori}. Indeed, the use of Fourier analysis is designed to study harmonic properties, and the PLA quantifies the linearity of the segments in the series. If we do not know the structure of the signal, it is hard to chose a discriminant representation.
+
+
+% subsubsection intro:rpz:local (end)
+
+
+\subsubsection{Pattern-based Representations}
+\label{ssub:intro:rpz:patterns}
+
+For series with unknown structure, the adaptivity of the representation method is critical. An idea to summarize the signal is to automatically extract the recurring shapes. The characteristic of the structures are learned from the data, making it possible to extract non-analytic behaviors. The local structures extracted are called \emph{patterns}. Pattern representation was first developed for	vector data as a way to reduce the variability of the points and the noise. \citet{hotelling1933analysis} developed the popular Principal Component Analysis (PCA) to compute the vectors which explain the most the variance in the data. The principal components can be seen as pattern vectors, typical of the observed data. Another vector representation based on patterns is the $K$-means algorithm \citep{Macqueen1967}. This method assigns each vector to one of the $K$ clusters and represents it as the centroïd of all the elements in the cluster. Many other classical vector techniques can be interpreted in the pattern-based representation framework such as the Independent Component Analysis (ICA, \citealt{Naik2011}), or the Non-negative Matrix Factorization (NMF, \citealt{Gillis2011}). \citet{Olshausen1997} introduced the sparse dictionary learning, a method which learns patterns from the data, called atoms of a dictionary, and uses them to encode the original samples. This method can be seen as a very general framework to learn patterns.
+
+
+
+For temporal signals, patterns are typically sub-series which are repeated in time. The series are encoded with the activation of a limited number of these patterns. This representation has a double advantage. First, the limited number of patterns ensure that we reduce the complexity of the variation of the series. Then, if the coding signal is sparse, this representation efficiently separates the variations of the signal from their localization in time. This kind of representation is quite natural for physiological signals which have some characteristic patterns such as ECG, EEG,  or the vertical acceleration of a foot during the walk presented in \autoref{fig:intro:walk_pattern}. By using insights from the dictionary learning for vector data, algorithms designed to extract typical local structures in signals have been developed recently. The advantages of this set of techniques are their adaptivity and their interpretability. Fixing the design of the learned dictionary allows to tweak for the size and scale of the atoms, and the resolution of the method to study the structure of the signal. Also, the split between the localization and the shape of the patterns makes the representation informative. For instance, in \autoref{fig:intro:walk_pattern}, it is easier to study the regularity of the steps from the activation signal in dashed red than from the original signal in blue, as the variations are summarized by a unique pattern and the small variations from this pattern are discarded, making the analysis clearer and cleaner.
+
+
+
+% subsubsection intro:rpz:patterns (end)
+
+
+% section intro:ts_rpz (end)
+
+
+\biblio{}
+\end{document}

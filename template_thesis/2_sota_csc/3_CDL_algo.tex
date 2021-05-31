@@ -1,0 +1,919 @@
+\documentclass[../thesis.tex]{subfiles}
+\crossref{}
+\begin{document}
+\def\sbiblio{}
+
+
+\section{Convolutional Sparse Coding}
+\label{sec:csc_algo}
+
+\CHANGES{
+The convolutional sparse coding refers to the computation of the embedding of a signal $X$ on a fixed dictionary $\pmb D$ with a sparsity inducing regularization $\Psi$, solving
+%
+\begin{equation}
+\label{eq:conv_sc:general}
+	\argmin_{Z} \frac{1}{2} \left\|X - \sum_{k=1}^KZ_k* {\pmb D}_k\right\|_2^2
+				+ \lambda\Psi\left(Z\right)~.
+\end{equation}
+%
+The choice of the regularization function $\Psi$ has an impact on the sparsity of the estimated coding signal and the performance of the algorithms used to solve \autoref{eq:conv_sc:general}. The $\ell_0$-norm is a natural choice for $\Psi$ as it is directly measuring the sparsity of the solution, but the problem \autoref{eq:conv_sc:general} in this case is non-convex and NP-hard to solve. Greedy algorithms such as the Matching Pursuit (MP; \citealt{Mallat1993}) and the Orthogonal Matching Pursuit (OMP; \citealt{Pati1993}) efficiently compute an approximate solution to this problem, and can give good results in practice \citep{Yellin2017}. A convex relaxation of this problem is obtained by taking $\Psi$ to be the $\ell_1$-norm of the coding signal and efficient algorithms can compute the minimal solution. Under some assumptions on the sparsity of the solution and the design of the dictionary, this relaxation can be shown to consistently estimate the solution of the $\ell_0$ problem \citep{Donoho2002, Fuchs2004}. In the following, we focus on sparse coding with $\ell_1$-regularization as its guaranteed convergence can improve the accuracy compared to approximate $\ell_0$ minimization algorithms. Note that $\ell_1$-regularized methods tend to be slower than the greedy $\ell_0$ approaches so the choice of the method results of tradeoff between computational power and accuracy.
+}
+
+	The convolutional sparse coding refers to the embedding of a signal on a dictionary
+	with a $\ell_1$ regularization. Given a dictionary of patterns $\bar{\pmb D}$,
+	convolutional sparse coding aims to retrieve the activation signals $Z^*$ associated
+	to the signal $X$ by solving the following optimization problem,
+	\begin{equation}
+		\label{eq:intro_sc}
+		Z^* = \argmin_{Z} E(Z) \overset{\Delta}{=}
+			\underbrace{\frac{1}{2} \left\|X - \sum_{k=1}^KZ_k* {\pmb D}_k\right\|_2^2}_{h_1(Z)}
+			+ \underbrace{\lambda\left\|Z\right\|_1\phantom{\Bigg)}}_{h_2(Z)},
+	\end{equation}
+	for a given regularization parameter $\lambda > 0$~.
+	\autoref{eq:intro_sc} can be interpreted as a special case of
+	the LASSO problem with the band circulant matrix $\bar{\mathcal D}$ and the model
+	\autoref{eq:model_vect}. Therefore, classical optimization techniques designed for
+	LASSO can be applied to solve it with the same convergence guarantees. However,
+	the dimension of the problem is too large for the algorithms to be efficient.
+	The expression \autoref{eq:intro_sc} using convolution allows the use of more
+	efficient computation for the gradient of $h_1$ and it is possible to design.
+	State-of-the-art algorithms for \autoref{eq:intro_sc} and their link
+	to original algorithm in the optimization literature are recalled in
+	\autoref{tab:conv_sc} and the following subsections describe them in details.
+	
+	
+
+\begin{table}[t]
+    \centering
+	\begin{tabular}{|c | c | c |}\hline
+		Methods & {Original paper for sparse coding} & Convolutional adaptation\\\hline
+		\hyperref[sub:fss]{FSS} & \citealt{Grosse2007} & \citealt{Lee2007} \\\hline
+		\hyperref[sub:fista]{FISTA} & \citealt{Beck2009} & \citealt{Chalasani2013}\\\hline
+		\hyperref[sub:admm]{ADMM} & \citealt{Gabay1976} & \citealt{Bristow2013} \\\hline
+		\hyperref[sub:cd]{CD} & \citealt{Friedman2007} & \citealt{Kavukcuoglu2013} \\\hline
+	\end{tabular}
+	\caption{
+	Algorithms for $\ell_1$-regularized convolutional sparse coding}
+\label{tab:conv_sc}
+\end{table}
+
+
+\subsection{Feature Sign Search (FSS)}
+\label{sub:fss}
+
+
+%%%% %%%%%%%%%%%%%
+%%%% Algorithme de sparse coding
+%%%% Intuition: On a un problème convex si on connait les signes
+%%%% Convergence dans notre cas. equation aussi?
+
+	The Feature Sign Search algorithm (FSS) was introduced by \citet{Lee2007}. This
+	algorithm is developed to solve traditional sparse coding problem, without the
+	convolution but can be easily adapted to solve the convolutional case. Knowing
+	the signs of the non-zero coefficients of the optimal solution, we can replace
+	the $\ell_1$-norm by a linear operator. If $\Theta^*$ denotes the sign of the
+	values of $Z^*$ such that, $\Theta^*_k[t] = \text{sign}(Z^*_k[t])$, then
+	\begin{equation}
+		\|Z^*\|_1 = \langle \Theta^*, Z^*\rangle~.
+	\end{equation}
+	If $\Theta^*$ is known, \autoref{eq:intro_sc} is equivalent to the
+	differentiable problem
+	\begin{equation}
+		\label{eq:conv_qp}
+		\argmin_{Z \in \Xset_L^K} \frac{1}{2} \|X - \sum_{k=1}^K Z_k*{\pmb D}_k\|_2^2
+		+ \lambda\langle Z, \Theta^*\rangle~.
+	\end{equation}
+	Here, the non-differentiable $\ell_1$-norm has been replaced by a linear
+	scalar product. \citet{Grosse2007} showed that the FSS algorithm, designed
+	to solve the LASSO problem, could be efficiently used for the convolutional
+	sparse coding.
+
+
+
+\begin{algorithm}[ht]
+	\caption{Feature Sign Search Algorithm}
+	\label{alg:fss}
+	\begin{algorithmic}[1]
+		\STATE \textbf{Input} $X, \pmb D$ and $\lambda$\\
+		We recall that $\bar x$ is the vector notation for $X \in \Xset_T^P~,$ \ie{} $x_{t*P + p} = X_p[t]$ \\
+		And $D$ is the band cirucant matrix associated to $\pmb D$ (see \autoref{sub:link_dl})
+		\STATE Initialize $\bar z=0, \bar\theta = 0$ and $\mathcal I = \{\}$
+		\REPEAT
+		\STATE Compute the gradient vector $G = \nabla h_1(Z)$ 
+		\STATE Update the active set
+				$\mathcal I = \mathcal I \cup \left\{t*K+k ~~\middle/~~ 
+					\left|G_k[t]\right| > \gamma\right\}$
+		\STATE Estimate the signs on the active set \emph{s.t.}
+			\[
+			   \Theta_k[t] = \begin{cases}
+			   		\text{sign}(G_k[t]) &\text{if } Z_k[t] = 0\\
+			   		\text{sign}(Z_k[t]) &\text{if } Z_k[t] \neq 0\\
+			   	\end{cases} ~~~\forall (k, t) ~~s.t~~ (t*K+k)\in \mathcal I
+			\]
+		\STATE \textbf{Solve the QP sub-problems}:
+		\REPEAT
+		\STATE Extract matrix $\widetilde A =  D_{[\mathcal I, \mathcal I]};$
+		\STATE Extract vectors $\widetilde z = \bar z_\mathcal I;
+				\hspace{.4cm}\widetilde \theta = \bar\theta_\mathcal I;
+				\hspace{.4cm}\widetilde x = \bar x_\mathcal I;$
+		\STATE Compute solution of \autoref{eq:vect_qp} with   $\widetilde z_{new} = (\widetilde A\tran\widetilde A)^{-1}(\widetilde A\tran\widetilde x - \lambda \widetilde \theta/2)$
+		\STATE \textbf{Discrete line search}:\\
+				\STATE \hskip1em Set $\mathcal S_d = \left \{\widetilde z^\alpha; \alpha \in \left \{ \frac{\widetilde z_{new, i}}{\widetilde z_{new, i}- \widetilde z_i}\right\} \cap [0,1] \text{ and } \widetilde z^\alpha_j = \begin{cases}
+		 0 \text{ if } \widetilde\theta_j\widetilde z^\alpha_j  < 0\\
+			\alpha \widetilde z_j + (1-\alpha) \widetilde z_{new, j}
+		\end{cases} \right \}$\\
+				\STATE \hskip1em Set $\displaystyle\widetilde z^* = \argmin_{\widetilde z^\alpha \in \mathcal S_d}
+									   \|\widetilde x - \widetilde A \widetilde z^\alpha\|^2 + \lambda {\widetilde\theta}\tran \widetilde z^\alpha
+		$
+
+				\STATE Set $\bar z_\mathcal I = \widetilde z^* \text{ and } \bar \theta = \text{sign}(\bar z)$
+			\UNTIL $\bar g_j + \lambda \bar\theta_j = 0 \hspace{.4cm}\forall j \in \left\{j \in \mathcal I; \bar z_j \neq 0\right\}$
+
+			\STATE Set $\mathcal I = \left\{ i | \bar z_i \neq 0\right\};$
+
+		\UNTIL $|\bar g_j| \le \lambda  \hspace{.4cm}\forall j \in \left\{j \in \mathcal I; \bar z_j = 0\right\}$
+		\STATE\textbf{Return } Z
+	\end{algorithmic}
+\end{algorithm}
+
+	\autoref{alg:fss} describe the pseudo code of the FSS algorithm in details. The
+	idea of FSS is to estimate the signs of the coefficients in $Z^*$ and to solve
+	the resulting quadratic program (QP) sub-problem \autoref{eq:conv_qp}. Each
+	iteration refines the sign estimation, and the algorithm converges to a global solution.
+	Due to the high dimension of the problem, the algorithm is designed as a working
+	set algorithm, putting coefficients which are estimated to be non-zero in the
+	active set and then computing the solution of the resulting QP. From this new
+	solution, the sign of $Z^*$ is estimated again and the working set is updated
+	accordingly.
+
+\subsubsection{Solving the QP Sub-problems}
+\label{par:solve_qp}
+	In order to clarify its steps, it is necessary to use a vector form for \autoref{eq:conv_qp},
+	which has a closed form solution and helps understand the benefit of the working set. We
+	recall that for a signal $X\in\Xset_T^P$, $\bar x$ is defined as $\bar x_{t*P + p} = X_p[t]~.$ 
+	Re-using the vectorized form of the convolutional representation from
+	\autoref{eq:model_vect}, with the vector $\bar x \in \Rset^{PT}$ representing
+	$X$ and the vectors $\bar z, \bar \theta^{(q)} \in\Rset^{KL}$ representing $Z$
+	and sign$(Z)$, \autoref{eq:conv_qp} can be rewritten as
+	\begin{equation}
+		\label{eq:vect_qp}
+		\argmin_{\bar z} \underbrace{\frac{1}{2}\|\bar x - D\bar z \|_2^2}_{F(\bar z)}
+						+ \lambda \langle\bar\theta^{(q)}, \bar z\rangle~.
+	\end{equation}
+	This minimization problem has a closed form solution
+	\begin{equation}
+		\label{eq:sol_qp}
+		\bar z = \left(D\tran D\right)^{-1}
+				  \left(D\tran\bar x - \lambda \bar \theta^{(q)}/2\right)~.
+	\end{equation}
+	The computational cost of \autoref{eq:sol_qp} is too expensive to be computed
+	for the whole problem, as its complexity is $\bO{K^3T^3}~.$ The FSS algorithm
+	reduces the computational cost of solving the QP by only considering a working
+	set of coefficient $\mathcal I^{(q)}$ at each iteration $q$. By only considering
+	non-zero variable in $\mathcal I^{(q)}$, \autoref{eq:sol_qp} can be reduced to
+	\begin{equation}
+		\label{eq:sol_qp_ws}
+		\bar z_{\mathcal I^{(q)}} = \left(D\tran D
+				\right)_{[\mathcal I^{(q)}, \mathcal I^{(q)}]}^{-1}
+				\left((D\tran\bar x)_{[\mathcal I^{(q)}, \mathcal I^{(q)}]}
+					  - \lambda \bar \theta^{(q)}_{\mathcal I^{(q)}}/2\right)~.
+	\end{equation}
+	The complexity of the iteration is reduced from $\bO{K^3T^3}$ to
+	$\bO{|\mathcal I^{(q)}|^3}$. In practice, due to the sparsity of the searched
+	solution, the size of the working set is manageable and the complexity of the
+	iteration does not explode.
+
+% subsubsection solve_qp (end)
+
+\subsubsection{Sign Estimation and working set extension}
+\label{par:sign_estimate}
+
+	At each iteration $q$, the estimated sign of the solution is updated. For
+	coefficient $i$ which are non-zero in the current solution $Z^{(q-1)}$,
+	the estimation of the sign is set to be coherent with the solution estimate,
+	\ie{}
+	\[
+		\bar \theta^{(q)}_i = \text{sign}\left(\bar z^{(q-1)}_i\right)~.
+	\]
+	Then, the working set is updated to include extra coefficient in $\mathcal I^{(q)}$.
+	To avoid overly growing the working set, a fixed number of coefficient are chosen
+	from the zero coefficients to be added to the working set. The selected
+	coefficients are the one with maximal gradient, such that
+	\begin{equation}
+		\mathcal I^{(q)} = \mathcal I^{(q-1)} \cup \left \{ i~ \middle /~
+				|\nabla F(\bar z^{(q-1)})_{i}| \ge \max\left(\lambda, \nabla F(\bar z^{(q-1)})_{j}|\right) ~~
+				\forall j \notin \mathcal I^{(q-1)}\right \}~.
+	\end{equation}
+	For these coefficients, the sign is estimated from the value of the gradient
+	and
+	\begin{equation}
+		\theta_i = \text{sign}\left(\nabla F(z^{(q-1)})_i\right) ~~~
+		\forall i \in \mathcal I^{(q)} \textit{ s.t. } \bar z_i^{(q-1)} = 0~.
+	\end{equation} 
+
+% subsubsection  (end)
+
+\subsubsection{Discrete Line Search}
+\label{par:line_search_fss}
+
+	An important point of this algorithm is that the current solution should stay
+	coherent with the sign estimate. This property ensures that the cost function
+	will always decrease with the algorithm iterations. The solution computed with
+	\autoref{eq:sol_qp} is not guaranteed to be coherent. To cope with this, a line
+	search is used to find a point, coherent with the current sign estimate
+	$\theta^{(q)}$ which decreases the objective function. As the objective
+	\autoref{eq:vect_qp} is convex, this line search can be conducted by looking at
+	a discrete number of point, where coefficients are zeroed. First, the QP sub
+	problem solution $\bar y$ is computed with \autoref{eq:sol_qp}. We define the
+	set of coefficients $\mathcal J$ which are not coherent, such that
+	\[
+		\mathcal J = \left \{ ~i ~~\middle |~~ \bar\theta^{(q)}_i \bar y_i < 0 \right \}~.
+	\]
+	Then, we find the points on the segment from $\bar z^{(q-1)}$ to $\bar y$ where
+	the coefficients are null, \ie{} for $j \in \mathcal J$, we define
+	$\alpha_j \in [0, 1]$ as the number such that
+	$\left(\alpha_j \bar z^{(q-1)} + (1-\alpha_j) \bar y\right)_j = 0$. These scalars
+	have a closed form,
+	\[
+		\alpha_j = \frac{\bar z^{(q-1)}_j}{\bar z^{(q-1)}_j - \bar y_j}~.
+	\]
+	The discrete line search is performed for all these value
+	$\{ \alpha_j \}_{j\in \mathcal J}~.$ We define a set of possible
+	coherent solutions $ \{ \bar y^{[j]} \}_{j\in \mathcal J} $ such that
+	\[
+		\bar y^{[j]}_i = \begin{cases}
+			\alpha_j \bar z^{(q+1)} + (1-\alpha_j) \bar y, &
+				\text{ if } ~~~\bar y^{[j]}_i\bar\theta^{(q)}_i > 0 \text{ and } i \in \mathcal I^{(q)}~,\\
+			0, &\text{ elsewhere.}
+		\end{cases}
+	\]
+	The computed $\bar y^{[j]}$ are all coherent with $\bar\theta^{(q)}$. The coefficients
+	which flip signs on the segment $[0, \alpha_j]$ are set to 0 to keep the coherence.
+	The next solution estimate is chosen such that
+	\[
+		\bar z^{(q+1)} = \argmin_{\left \{ \bar y^{[j]} \right \}_{j \in \mathcal J}}
+					\frac{1}{2}\|\bar x - \pmb{\mathcal D} \bar y^{[j]} \|_2^2
+						+ \lambda \langle\bar\theta^{(q)}, \bar y^{[j]}\rangle~.
+	\]
+
+% subsubsection line_search_fss (end)
+
+\subsubsection{Convergence and Complexity}
+\label{par:cvg_fss} 
+
+	This algorithm converges to the optimal solution of \autoref{eq:intro_sc}.
+	The proof of convergence was derived by \cite{Lee2007} in the vectorial case
+	and can be adapted easily to the convolutional case. We refer the reader
+	to this paper for details about the proof. The proof starts by showing that
+	the solution at each iteration of the feature sign search step is guaranteed
+	to strictly reduce the objective cost if the current solution, coherent with
+	the support set $\mathcal I^{(q)}$ and sign estimate $\bar \theta^{(q)}$, is not
+	optimal for \autoref{eq:vect_qp}. Then, they show that no pair of sign estimate
+	and active set can be repeated during the algorithm. As there is only a finite
+	set of these pairs, the algorithm is guaranteed to converge. This proof does
+	not state any convergence rate and the convergence can be very slow as the number
+	of pairs grows exponentially with the dimension. However, the pairs that can be
+	visited have to result in energy strictly lower than the current energy and in
+	practice, this algorithm is able to solve reasonable scale problems.
+
+
+
+
+	The most computationally expensive operation for the FSS iteration is to
+	compute the solution of \autoref{eq:vect_qp} using the closed form solution
+	\autoref{eq:sol_qp}. With the working set technique, this operation
+	complexity is reduced to $\bO{|\mathcal I^{(q)}|^3}$. The complexity of
+	this algorithm is thus highly dependent of the solution sparsity. If the
+	solution is very sparse, the size of the working set should not grow much
+	and thus each iteration of FSS should be fast. \citet{Wohlberg2016} showed
+	in practice that FSS was efficient for very sparse signals or short signals.
+	For large signals, the number of coefficients in the active set might grow
+	bigger and the resolution of the quadratic sub problem becomes computationally
+	too expensive. In their original work, \citet{Grosse2007} propose an more
+	efficient extension for longer signals called Windowed FSS and described in \autoref{alg:wFSS}. This extension
+	selects a sub-part of the signal of length $2W$ at each step and calls the FSS
+	algorithm on this sub-signal. Then, the next windowed signal is selected by
+	shifting the selection window by $W$ time samples. This algorithm can be
+	related to a cyclic block coordinate descent and converges in practice. It is
+	necessary to make multiple pass over all the windows to ensure that the results
+	are good enough. Empirically, \citet{Grosse2007} showed that after 2 passes,
+	the results was slightly worse than the optimal value.
+
+
+
+
+\begin{algorithm}[tp]
+	\caption{Windowed FSS}
+	\label{alg:wFSS}
+	\begin{algorithmic}[1]
+		\STATE \textbf{Input} $X, \pmb D$ and $\lambda$
+		\STATE Initialize $Z=0$
+
+		\FOR{ $q=1\dots N_{pass}$ }
+		\FOR{ $w = 0\dots \frac{L-W+1}{W}$}
+		\STATE Select sub-signal $\mathcal W = \left \{ t \middle| (w-1)*2W < t < (w+1)*2W \right \}$
+		\STATE Solve the sub-signal coefficients by restricting $\mathcal I \subset  \mathcal W$ in \autoref{alg:fss}
+		\ENDFOR
+		\ENDFOR
+		\STATE\textbf{return } Z
+	\end{algorithmic}
+\end{algorithm}
+
+% subsubsection cvg_fss (end)
+
+
+% In \citet{Grosse2007}, this algorithm is be adapted in the case of sparse coding
+% for a convolutional dictionary. For a fixed $A = \begin{bmatrix} a^{(1)}, \dots,
+% a^{(d)} \end{bmatrix}\tran$,
+% \[
+% 	s^* = \argmin_{S} \|F - \sum_{i=1}^d a^{(i)} * s^{(i)}\|
+% 					  + \lambda \sum_d \|s_i\|_1
+% \]
+% This problem can be seen as a quadratic problem in $S$ with a
+% $\ell_1$-regularization. If we denote $\tilde a_t = a_{-t}$:
+% \begin{align*}
+% \|F - \sum_{i=1}^d a_d * s_d\|
+% 	&= \sum_t\left(f_t - \sum_{i}\sum_{\tau} a_{t-\tau}^{(i)} s_\tau^{(i)}\right)^2\\
+% 	&= \sum_t f_t^2 - \sum_i \sum_\tau \left[ 2 s_\tau^{(i)} \left(\sum_t a_{t-\tau} f_t\right)
+% 		+ \sum_j \sum_{\tau'} s_\tau^{(i)}s_{\tau'}^{(j)} \sum_t a^{(i)}_{t-\tau}a^{(j)}_{t-\tau'}\right]\\
+% 	&= \sum_t f_t^2 - \sum_i \sum_\tau \left[ 2 s_\tau^{(i)} (\tilde a^{(i)}*F)_\tau
+% 		+ \sum_j \sum_{\tau'} s_\tau^{(i)}s_{\tau'}^{(j)} (\tilde a^{(i)}*a^{(j)})_{\tau-\tau'}\right]
+% \end{align*}
+
+% By denoting $\displaystyle S_{i*L + \tau} = s_{\tau}^{(i)}$, the problem can be
+% rewritten as
+% \[
+% \min_{S} S^T D S + b^T S + \lambda \|S\|_1
+% \]
+% with $D_{i*L+\tau,j*L+\tau'} = (\tilde a^{(i)}*a^{(j)})_{\tau-\tau'}$ and
+% $b_{i*L+\tau} = (\tilde a^{(i)}*F)_\tau$.
+
+% Thus, we can apply the feature sign search algorithm to find a solution of this
+% sparse coding problem. We have the same kind of convergence result as it is
+% almost the same problem.
+
+
+\subsection{Fast Iterative Soft Thresholding Algorithm (FISTA)}
+\label{sub:fista}
+
+
+\subsubsection{Iterative Soft-Thresholding Algorithm}
+\label{ssub:cdl_ista}
+
+	The most classical algorithm to solve $\ell_1$-regularized problems such as LASSO is
+	the Iterative Soft Thresholding Algorithm (ISTA). It was designed by
+	\citet{Daubechies2004} and relies on a proximal gradient descent. It is straight
+	forward to adapt this algorithm to the convolutional setup. The algorithm updates
+	the current estimate $Z^{(q)}$ at iteration $q$ using a proximal descent step for
+	\autoref{eq:intro_sc} \ie{}
+	\begin{equation}
+		\label{eq:ista}
+		Z^{(q+1)} = \text{Sh}\left(Z^{(q)} - \alpha\nabla h_1(Z^{(q)}),
+								   \alpha\lambda\right)
+	\end{equation}
+	with $\alpha > 0$ a learning rate parameter and Sh the soft-thresholding operator. The
+	soft-thresholding operator is defined as a coordinate-wise operator, such that applying
+	it to the scalar $u \in \Rset$ gives
+	\begin{equation}
+	\label{eq:csc:def_sh}
+		\text{Sh}(u, \lambda) = \text{sign}(u)\max(|u| - \lambda, 0)~.
+	\end{equation}
+	It is the closed form formula for the proximal operator associated to $\lambda\|\cdot\|_1$~.
+	The proximal operator extends gradient descent for convex, non-differentiable functions.
+	For differentiable convex functions, the operator corresponds to a gradient descent step.
+	As $h_2$ is a convex function, its proximal operator in $Z$ is defined as
+	\[
+		\prox{}_{h_2}(Z) =  \argmin_Y \frac{1}{2}\|Z - Y\|_2^2 + h_2(Y)~.
+	\]
+	This minimization problem is separable on each coordinate and its solution is given by
+	the coordinate-wise function Sh.
+
+\begin{algorithm}[t]
+	\begin{algorithmic}[1]
+
+		\STATE \textbf{Input: } dictionary $D$, regularization parameter $\lambda$,
+							 and tolerance $\epsilon$
+		\STATE Initialization: $\displaystyle Z_k^{(0)}[t] = 0$ and
+							   $L = \max_{\omega} \|\widehat {\pmb D}[\omega]\widehat {\pmb D}[\omega]\tran\|_2^2$
+		\REPEAT
+		\STATE \textbf{Gradient step: }Update for all $(k, t) \in \mathcal C$
+		\[
+			U_k[t] = Z^{(q)}_k[t] - \frac{1}{L}\nabla f(Z^{(q)})_k[t]
+		\]\vskip-1em
+		\STATE \textbf{Soft-thresholding: } point with proximal operator for $U$
+		\[
+			Z^{(q+1)} = \text{Sh}\left(U, \frac{\lambda}{L}\right)
+		\]
+		\UNTIL{$\left\|Z^{(q+1)} - Z^{(q)}\right\|_\infty < \epsilon$}
+		\STATE \textbf{Return} $Z^{(q)}$ 
+
+	\end{algorithmic}
+	\caption{Iterative Soft-Thresholding Algorithm (ISTA)}
+	\label{alg:ista}
+\end{algorithm}
+
+% subsubsection cdl_ista (end)
+
+\subsubsection{Accelerating ISTA with Momentum}
+\label{ssub:cdl_fista}
+
+
+	This algorithm can be accelerated via the momentum method. In their paper,
+	\citet{Beck2009} derive an algorithm called Fast ISTA (FISTA), based on ISTA
+	with an extra step which accelerates the convergence of the algorithm to the
+	optimal solution of \autoref{eq:intro_sc}. This extra step has been developed
+	by \citet{Nesterov1983} and is called the Nesterov's momentum. It defines an
+	auxiliary point $Y^{q}$ by continuing in the direction of the update between
+	points at iterations $q-1$ and $q$, such that
+	\[
+	Y^{(q)} = Z^{(q)} + \frac{\gamma^{(q) }- 1}{\gamma^{(q+1)}}
+						\left(Z^{(q+1)} - Z^{(q)}\right)
+	\]
+	with scalar $\gamma^{(q)}$ following the recursion with $\gamma^{(0)} = 1$ and
+	$\gamma^{(q+1)} = \frac{1 + \sqrt{1 + 4{\gamma^{(q)}}^2}}{2}~.$ The design of
+	the $\gamma$  term was derived to maximize the acceleration given by this extra
+	step. The proximal descent update is then computed starting from this new point,
+	using the same mechanism as in ISTA. \autoref{alg:fista} summarizes this algorithm.
+	
+	The explanation of why this algorithm is able to accelerate the convergence of
+	gradient descent is complicated. An intuition of what happens can be seen when
+	analyzing this algorithm as a dynamical system. If we consider the function we
+	want to minimize as a bowl and assimilate our current point to a ball, the
+	minimization can be seen as the movement of the ball toward an equilibrium
+	point. In the gradient descent, the ball is moved as if it was starting each
+	time with zero speed and only gravity helps it moves to the next spot. The
+	momentum technique adds the speed of the ball in the equation and speed up the
+	movement of the ball toward the equilibrium point, which is the minimal point
+	of the surface defined by the cost function. A formal link with second order
+	differential equations is established by \citet{Su2016}.
+
+
+\begin{algorithm}[t]
+	\begin{algorithmic}[1]
+
+		\STATE \textbf{Input: } dictionary $D$, regularization parameter $\lambda$,
+							 and tolerance $\epsilon$
+		\STATE Initialization: $Z^{(0)}_k[t] = Y^{(0)}_k[t] = 0,
+			   L = \max_{\omega} \|\widehat d[\omega]\widehat d[\omega]\tran\|_2^2$
+		\REPEAT
+		\STATE \textbf{Proximal gradient step:} compute ISTA like update from $Y^{(q)}$ 
+		\[
+			Z^{(q+1)}=  \text{Sh}\left(Y^{(q)} - \frac{1}{L}\nabla f(Y^{(q)}),
+									   \frac{\lambda}{L}\right)
+		\]
+		\STATE Update momentum coefficient
+			$\displaystyle \gamma^{(q+1)} = \frac{1 + \sqrt{1 + 4{\gamma^{(q)}}^2}}{2}$
+		\STATE \textbf{Nesterov momentum step:}
+		\[
+			Y^{(q+1)} =  Z^{(q+1)} + \frac{\gamma^{(q) }- 1}{\gamma^{(q+1)}}
+											   \left(Z^{(q+1)} - Z^{(q)}\right)
+		\]
+		\UNTIL{$\left\|Z^{(q+1)} - Z^{(q)}\right\|_\infty < \epsilon$}
+		\STATE \textbf{Return} $Z^{(q)}$ 
+
+	\end{algorithmic}
+	\caption{Fast Iterative Soft-Thresholding Algorithm (FISTA)}
+	\label{alg:fista}
+\end{algorithm}
+
+% subsubsection cdl_fista (end)
+
+\subsubsection{Convergence and Complexity}
+\label{ssub:cvg_fista}
+
+
+	Both ISTA and FISTA were proven to converge to the optimal solution of the LASSO
+	in \citet{Beck2009}. The convergence rate of ISTA is $\bO{\frac{1}{q}}$ and its
+	accelerated version has a convergence rate of $\bO{\frac{1}{q^2}}$. Their extension
+	to the convolutional cases is really straightforward. The only change is the formula
+	for the gradient computation. The proof of convergence and the convergence rates
+	do no depend on the particular structure of $h_1$ and can also be proven for
+	\autoref{eq:intro_sc}. Using FISTA to solve the convolutional sparse coding
+	was proposed by \citet{Chalasani2013}. They show that when using convolution to
+	compute the gradient of $h_1$, it is possible to efficiently solve convolutional
+	sparse coding \autoref{eq:intro_sc}.
+
+
+	The most computationally expensive operation for the FISTA updates is to compute
+	the gradient $\nabla h_1~.$ An interesting idea proposed by \citet{Wohlberg2016}
+	and by \citet{Haeffele2017b}
+	is to use fast Fourier Transform (FFT) to compute it quickly. Indeed, using the
+	Parseval theorem,
+	\begin{equation}
+		\label{eq:fista_fft}
+		\left\|X - \sum_{k=1}^KZ_k*{\pmb D}_k\right\|_2^2
+			= \left\|\widehat X- \sum_{k=1}^K \widehat Z_k\widehat {\pmb D}_k \right\|_2^2
+	\end{equation}
+	This technique accelerates the computations for the updates at each step
+	in FISTA. The most expensive computation is the FFT performed to obtain the
+	Fourier transform of the elements. It has a computational cost of $\bO{KT\log T}~.$
+% subsubsection cvg_fista (end)
+
+
+\subsection{Alternating Direction Method of Multiplier (ADMM)}
+\label{sub:admm}
+
+
+\subsubsection{General ADMM Algorithm}
+\label{ssub:admm_general}
+
+	An algorithm which received much attention recently for $\ell_1$ optimization
+	is the alternating direction method of multiplier (ADMM). It was introduced for
+	general problems by \cite{Gabay1976}. The paper considers solving problem of
+	the form 
+	\begin{equation}
+		\label{eq:admm_general}
+		\begin{split}
+			\text{minimize~} & h_1(X) + h_2(Y)\\
+			\text{subject to~} & \pmb AX + \pmb BY = C
+		\end{split}
+	\end{equation}
+	with $X \in \Rset^{P_1}, Y\in\Rset^{P_2}, C\in\Rset^{P_3}$ and
+	$\pmb A \in\Rset^{P_3\times P_1}, \pmb B \in\Rset^{P_3\times P_2}$ for two
+	convex functions $h_1, h_2$. The resolution of this constraint optimization
+	problem is performed using the augmented Lagrangian, defined as
+	\begin{equation}
+	\label{eq:lagrangien}
+		\mathcal L(X, Y, \Theta, \mu) = h_1(X) + h_2(Y)
+			+ \Theta\tran(\pmb AX + \pmb BY - C)
+			+ \frac{1}{2}\mu \|\pmb AX + \pmb BY - C\|_2^2~.
+	\end{equation}
+with $\Theta \in \Rset^{P_3}$ the dual variable of the problem. \autoref{alg:admm} describes the steps of the ADMM algorithm. In a nutshell, the updates are performed alternatively on each variable of the Lagrangian to reach the optimum. Updates  \hyperref[alg:l_minx]{line~\ref*{alg:l_minx}} and \hyperref[alg:l_miny]{line~\ref*{alg:l_miny}} minimize the Lagrangian $\mathcal L$ in the first two arguments and then, in \hyperref[alg:l_maxa]{line~\ref*{alg:l_maxa}}, the dual variable $\Theta$ is updated in order to maximize $\mathcal L$.
+
+
+\begin{algorithm}[tp]
+\begin{algorithmic}[1]
+
+	\STATE \textbf{Input: } functions $h_1, h_2$, matrix $\pmb A, \pmb B$, vector $C$, parameter $\mu$
+						 and tolerance $\epsilon$
+	\STATE Initialization: $Y^{(0)}, \Theta^{(0)}$
+	\REPEAT
+	\STATE $\displaystyle X^{(q+1)} = \argmin_{X} h_1(X) + \frac{\mu}{2}
+				\left\|\pmb AX + \pmb BY^{(q)} - C + \frac{\Theta^{(q)}}{\mu}\right\|_2^2$
+	\label{alg:l_minx}
+	\STATE $\displaystyle Y^{(q+1)} = \argmin_{Y} h_2(Y) + \frac{\mu}{2}
+				\left\|\pmb AX^{(q+1)} + \pmb BY - C + \frac{\Theta^{(q)}}{\mu}\right\|_2^2$
+	\label{alg:l_miny}
+	\STATE $\displaystyle \Theta^{(q+1)} = \Theta^{(q)} + \pmb AX^{(q+1)} + \pmb BY^{(q+1)} - C$
+	\label{alg:l_maxa}
+	%\STATE 	Update multiplier $\mu^{(q+1)}= \tau \mu^{(q)}$ 
+	%\label{alg:l_maxmu}
+	\UNTIL{$ \max\left(\|AX^{(q+1)} + BY^{(q+1)} - C\|_2, 
+					   \|\mu A\tran B (X^{(q+1)} - X^{(q)})\|_2\right) < \epsilon$}
+
+\end{algorithmic}
+\caption{Alternating Direction Method of Multipliers (ADMM)}
+\label{alg:admm}
+\end{algorithm}
+
+% subsubsection admm_general (end)
+
+
+\subsubsection{Fast Convolutional Sparse Coding (FCSC)}
+\label{ssub:fcsc}
+
+
+\citet{Bristow2013} built on this method to propose a new algorithm to solve \autoref{eq:intro_sc}. The idea is to re-write the minimization problem by splitting the two parts of the cost function with an auxiliary variable $Y$, such that
+%
+\begin{equation}
+	\label{eq:admm_sc}
+	\begin{split}
+		\text{minimize~} &
+		\underbrace{\frac{1}{2} \left\|X - \sum_{k=1}^KZ_k* {\pmb D}_k\right\|_2^2}_{h_1(Z)}
+		+ \underbrace{\lambda\left\|Y\right\|_1}_{h_2(Y)}~,\\
+		\text{subject to~} & Z = Y~.
+	\end{split}
+\end{equation}
+
+The augmented Lagrangian for problem \autoref{eq:admm_sc} is given by
+%
+\begin{equation}
+	\mathcal L(Y, Z, \Theta, \mu) = h_1(Z) + h_2(Y) +
+	\Theta\tran(Y-Z) + \frac{\mu}{2} \|Y-Z\|_2^2
+\end{equation}
+%
+The updates are then computed using the same steps as described in \autoref{alg:admm}. The steps line \autoref{alg:l_miny} and \autoref{alg:l_maxa} are easy to compute in this setup. The updates can be computed using the following
+%
+\begin{align}
+	\label{eq:admm1}
+	Y^{(q+1)} &= \text{Sh}\left(Z^{(q+1)} + \frac{\Theta^{(q)}}{\mu}, \frac{\lambda}{\mu}\right)\\
+	\label{eq:admm2}
+	\Theta^{(q+1)} &= \Theta^{(q)} + \left(Z^{(q+1)} - Y^{(q+1)}\right)
+\end{align}
+%
+where $\text{Sh}$ is the soft thresholding operator, defined in \autoref{eq:csc:def_sh}. The most expensive part is to compute the update \hyperref[alg:l_minx]{line~\ref*{alg:l_minx}},
+%
+\begin{equation}
+	\label{eq:sc:admm:z_update}
+	Z^{(q+1)} = \argmin_{Z} \frac{1}{2}\left\|X - \sum_{k=1}^KZ_k*{\pmb D}_k\right\|_2^2
+			  + \frac{\mu}{2} \left\|Y^{(q)} + \frac{\Theta^{(q)}}{\mu} - Z \right\|_2^2~.
+\end{equation}
+%
+Using the same idea as the one to accelerate the gradient in FISTA in \autoref{eq:fista_fft}, we can rewrite \autoref{eq:sc:admm:z_update} using the Parseval theorem
+%
+\[
+	\widehat Z^{(q+1)} = \argmin_{Z}
+		\frac{1}{2}\left\|\widehat X - \sum_{k=1}^K\widehat Z_k\widehat {\pmb D}_k\right\|_2^2
+			  + \frac{\mu}{2} \left\|\widehat Y^{(q)}
+			  + \frac{\widehat\Theta^{(q)}}{\mu} - \widehat Z \right\|_2^2~.
+\]
+%
+The solution to this problem is given by the solution $\widehat Z$ of the linear system
+%
+\begin{equation}
+	\label{eq:admm:z_update}
+	\left(\widehat {\pmb D}^{H}\widehat {\pmb D} + \mu \pmb I\right)\widehat Z =
+			\widehat {\pmb D}^H \widehat X + \mu \left(\widehat Y^{(q)}
+			+ \frac{\widehat \Theta^{(q)}}{\mu}\right)~.
+\end{equation}
+%
+This system is composed of $T$ independent system, which correspond to each frequency computed by the FFT and the solution of \autoref{eq:sc:admm:z_update} can be retrieved using the inverse Fourier transform. The full algorithm to solve the convolutional sparse coding based on ADMM is described in \autoref{alg:admm_sc}.
+
+
+\begin{algorithm}[t]
+\begin{algorithmic}[1]
+
+	\STATE \textbf{Input: } Signal $X$, Dictionary $\pmb D$, parameter $\mu$
+						 and tolerance $\epsilon$
+	\STATE Initialization: $Y^{(0)} = X, \Theta^{(0)} = 0$
+	\STATE Precompute $\widehat{\pmb D}$ with  FFT of $\pmb D$ with zero-padding to length $T$
+	\REPEAT
+	\STATE Compute $\widehat Y^{(q)}, \widehat \Theta^{(q)}$ with FFT of
+		   $Y^{(q)}, \Theta^{(q)}$  with zero-padding to length $T$
+	\STATE Solve the linear system for $l \in \llbracket 0, \frac{T}{2}\llbracket$ for $\widehat Z^{(q+1)}$ 
+	\[
+		\left(\widehat {\pmb D}[l]^{H}\widehat {\pmb D}[l] + \mu \pmb I_K\right)\widehat Z^{(q+1)}[l] =
+		\widehat {\pmb D}[l]^H \widehat X[l] + \mu \left(\widehat Y^{(q)}[l] + \frac{\widehat \Theta^{(q)}[l]}{\mu}\right)
+	\]
+	\STATE Compute inverse FFT of $\widehat Z^{(q+1)}$ 
+	\STATE Update $\displaystyle Y^{(q+1)} = \text{Sh}\left(X^{(q+1)} + \frac{\Theta^{(q)}}{\mu},
+														    \frac{\lambda}{\mu}\right)$
+	\STATE Update $\displaystyle \Theta^{(q+1)} = \Theta^{(q)} + \left(X^{(q+1)} - Y^{(q+1)}\right)$
+	\UNTIL{$ \max\left(\|X^{(q+1)} - Y^{(q+1)}\|_2, 
+					   \|X^{(q+1)} - X^{(q)}\|_2\right) < \epsilon$}
+	\STATE \textbf{Return}: $Y^{(q)}$
+
+\end{algorithmic}
+\caption{Fast convolutional Sparse Coding (FCSC)}
+\label{alg:admm_sc}
+\end{algorithm}
+
+% subsubsection fcsc (end)
+
+
+\subsubsection{Convergence and complexity}
+\label{par:cvg_admm}
+
+
+	\citet{Gabay1976} showed that the ADMM algorithm converges to the optimal
+	solution of \autoref{eq:intro_sc}. A detailed study of the properties of this
+	algorithm is given in \citet{Boyd2010}. This algorithm often gives an estimate
+	with sufficient accuracy for dictionary learning within tens of iterations.
+	Indeed, with alternate minimization, each iteration does not need to find an
+	optimal point, but a point with medium accuracy. However, ADMM can be slow to
+	converge to high accuracy.
+
+	For convolutional sparse coding, the computational complexity of each iteration
+	of the ADMM is driven by the update of $Z^{(q)}$. The updates are performed
+	with FFT, costing $\bO{KT\log{T}}~,$ and the resolution of the $T/2$ linear
+	systems \autoref{eq:admm:z_update}, with cost $\bO{TK^{3}}$ using the cholesky
+	decomposition. 
+	
+	
+	The value of $\mu$ in the ADMM algorithm controls the enforcement of the constraint
+	$X = Y$. A natural extension is to have this parameter vary at each iteration, with
+	the goal to improve the practical convergence to a good solution and to make the
+	algorithm more robust to initialization. \citet{Rockafellar1976} showed that for
+	strongly monotone operator, having $\mu^{(q)} \xrightarrow[q\to+\infty]{}+\infty$
+	implied super-linear convergence of method of multiplier. As the convergence
+	proof for ADMM relies on a fixed $\mu$, it is sufficient to consider that $\mu$
+	becomes fixed after a certain number of iterations. The most classical scheme to
+	scale $\mu$ is the following:
+	\[
+		\mu^{(q+1)} = \min(\mu_{\max}, \tau\mu^{(q)})~,
+	\]
+	for a given $\tau > 1$ and $\mu_{\max}$ usually fixed to $10^5$. Another scaling
+	proposed for $\mu$ is to adapt it to balance the two parts of the function.
+	\citet{He2000} proposed to use the update rule
+	\[
+		\mu^{(q+1)} = \begin{cases}
+			\tau \mu^{(q)}, &\text{ if } \|AX^{(q+1)} + BY^{(q+1)} - C\|_2 >
+											\nu \|\mu A\tran B (X^{(q+1)} - X^{(q)})\|_2~,\\
+			\displaystyle \frac{1}{\tau}\mu^{(q)}, &\text{ if }  \|\mu A\tran B (X^{(q+1)} - X^{(q)})\|_2 >
+											\nu \|AX^{(q+1)} + BY^{(q+1)} - C\|_2~,\\
+			\mu^{(q)}, &\text{ elsewhere,}\\
+	
+		\end{cases}
+	\]
+	where $\nu > 1$ and $\tau > 1$. Typical choices for these parameters are $\nu = 10$
+	and $\tau = 2$. The idea between this penalty is to balance the residuals of the primal
+	and dual problems, keeping them withing a factor $\nu$ of one another. Once one residual
+	becomes	bigger than this factor, the weight of the associated problem is increased by
+	properly scaling the multiplier $\nu$. This simple scheme works well in practice. 
+
+% subsubsection cvg_admm (end)
+
+
+\subsection{Convolutional Coordinate Descent (CD)}
+\label{sub:cd}
+
+	Another classical algorithm for sparse coding is the coordinate descent (CD).
+	This method was first proposed specifically for LASSO problem by \citet{Wang2007}
+	and then described in a unified framework by \citet{Friedman2007}. Based on this
+	seminal work, multiple extensions and variant have been developed. The core idea
+	for this algorithms is the following framework:
+	\begin{enumerate}
+		\item Select a coordinate to update,
+		\item Update only this coordinate.
+	\end{enumerate}
+	The different choices for steps 1 and 2 are critical and should be chosen based
+	on the optimization problem at hand. The key idea in coordinate descent is that
+	updating one coordinate of the solution is computationally cheap and if the solution
+	is sparse, only few coordinates should be updated as most of them are $0$.
+
+
+\begin{algorithm}[t]
+	\begin{algorithmic}[1]
+
+		\STATE \textbf{Input: }$\bar{\pmb D}, X$, parameter $\epsilon >  0$
+		\STATE $\mathcal C = \llbracket1, K\rrbracket\times\llbracket0, L-1\rrbracket$
+		\STATE Initialization: $\forall (k,t) \in \mathcal C,~~ $  \\
+		 $Z_k[t] = 0,~~\beta_k[t] = \left(\widetilde  D_k * X\right)[t]$
+		\REPEAT
+		\STATE $\forall(k,t) \in \mathcal C,~\displaystyle
+				Z'_k[t] = \frac{1}{\|D_k\|_2^2}\text{Sh}(\beta_k[t], \lambda)~,$
+		\STATE Choose $\displaystyle(k_0, t_0) = \argmax_{(k, t)\in\mathcal C} |\Delta Z_k[t]|$
+		\STATE Update $\beta$ using \autoref{eq:sota:csc:beta_up} and $Z_{k_0}[t_0] \leftarrow Z'_{k_0}[t_0]$
+		\UNTIL{$|\Delta Z_{k_0}[t_0]| < \epsilon$}
+
+	\end{algorithmic}
+	\caption{Greedy Coordinate Descent}
+	\label{alg:cd}
+\end{algorithm}
+
+\subsubsection{Coordinate Update}
+\label{ssub:coordinate_update}
+
+	For the second step of the procedure, two schemes have been proposed. Given a coordinate
+	$(k_0, t_0)$ to update in the current solution, the simplest update is to use a proximal
+	gradient descent step for the cost function reduced to this coordinate. This update
+	strategy uses a learning rate $\alpha > 0$ given as a parameter to perform the gradient
+	descent and performs the following step
+	\begin{equation}
+		\label{eq:cd_prox_gd}
+		Z_{k_0}[t_0] = \text{Sh}
+			\left(x_{k_0}[t_0] - \alpha\left(\nabla h_1(Z^{(q)})\right)_{k_0}[t_0]\right)
+	\end{equation}
+	This strategy allows the practitioner to adapt the step size algorithm, which can be
+	critical in some application. In most cases, using the inverse of the coordinate-wise
+	Lipschitz constant is a good choice. In the case of the convolutional sparse coding,
+	it is also possible to compute the optimal value of a given coordinate if all the other
+	are fixed. The problem in coordinate $(k_0, t_0)$ admits a closed form solution, which
+	can be used to replace the value of the updated coefficient,
+	\begin{equation}
+		\label{eq:cd_greedy}
+		Z'_{k_0}[t_0] = \frac{1}{\|D_{k_0}\|_2^2}\text{Sh}(\beta_{k_0}[t_0], \lambda)
+	\end{equation}
+	with
+	\[
+		\beta_{k}[t] = \left(\widetilde D_{k}*\left(X- \sum_{\substack{k'=1\\k'\neq k}}^KZ_{k'}*D_{k'}
+		- \Phi_{t}\left(Z_{k}\right)*D_{k}\right)\right)[t]~.
+	\]
+	The coefficient is then updated to its optimal value $Z'_{k_0}[t_0]$.
+
+
+% subsubsection coordinate_update (end)
+
+\subsubsection{Coordinate Selection}
+\label{ssub:coordinate_selection}
+
+	The first coordinate selection strategy proposed for this algorithm is to
+	cycle through all the coordinates \citep{Friedman2007}. The coordinates are
+	all updated, once at a time, before a new pass is made. \citet{Shalev2009}
+	proposed another selection scheme picking coordinates at random. Different
+	sampling strategies have been proposed but the most common one is the uniform
+	strategy. For these two methods, the choice of coordinate is computationally
+	inexpensive as it can be made independently of the current point.
+	
+	\citet{Osher2009} proposed another idea for the selection step, aiming to
+	maximize the cost function descent. A good proxy to the cost change induced
+	by one coefficient update is to choose the coefficient which would be changed
+	the most by the update, \ie{} if for any coefficient $(k, t)$, the current value
+	$Z_k[t]$ would be updated to $U_k[t]$, then the chosen update coefficient
+	$(k_0, t_0)$ is
+	\[
+		(k_0, t_0) = \argmin_{(k, t)\in \llbracket 1, K\rrbracket \times \llbracket 0, T-1\rrbracket}
+			\left| Z_k[t] - U_k[t] \right|~.
+	\]
+	If the updates are computed using the proximal gradient descent
+	\autoref{eq:cd_prox_gd}, this method chooses the coefficient with the maximal
+	gradient $\left|\left(\nabla h_1(Z^{(q)})\right)_k[t]\right|$, up to the soft thresholding border
+	effect. When the update is done using the optimal value of the coefficient,
+	the updated coefficient is the one the farthest from its optimal value.	
+	This strategy, tagged as greedy, is efficient in the context of sparse coding
+	as it focuses on coordinates which have high chances to be non-zero. The drawback
+	is that computing the updates is more expensive than the previous methods. Moreover,
+	if the greedy selection is computed naively, the cost of one update can be as
+	expensive as computing the full gradient. In this case, this method is obviously
+	less efficient than gradient based method as the full gradient is computed but
+	only one coordinate is updated, leading to slower algorithm.
+
+% subsubsection coordinate_selection (end)
+
+
+\subsubsection{Convergence and Complexity}
+\label{ssub:cvg_cd}
+
+
+	\citet{Tseng1988} shows the convergence of coordinate-wise maximization to the
+	optimal solution of concave maximization problems of the form
+	\[
+		\max_{x\in\Rset^n}f(x) + \sum_{i=1}^n g_i(x_i)
+	\]
+	with $f$ concave and differentiable and the $g_i$ concave using cyclic updates of
+	the coordinates $x_i$. \citet{Osher2009} give a proof of the algorithm convergence
+	for greedy updates and \citet{Nesterov2010} for the randomized updates. In addition,
+	the latter also shows that the convergence rate of both coordinate selection schemes
+	is $\bO{\frac{1}{q}}$ for general convex and differentiable function $f$. In their
+	work, \citet{Nutini} discuss the convergence rate of greedy algorithm in several
+	settings and show that for strongly convex function $f$, the greedy updates converge
+	faster to the solution than their randomized counter part, with better constants.
+	It is not clear whether their finding can be extended to non strongly convex $f$,
+	as it is the case in the convolutional sparse coding setting.
+
+	Another important aspect of comparison between those methods is the complexity of
+	each iteration. Computing the new value for the updated coordinate, for both
+	\autoref{eq:cd_prox_gd} and \autoref{eq:cd_greedy}, has the same complexity of
+	$\bO{KW}$, obtained by maintaining the auxiliary variables $\zeta$ or $\beta$ after
+	each update (see below). For coordinate	selection, the computational cost of choosing
+	a random coordinate is $\bO{1}$ whereas selecting the maximal coordinate is $\bO{KT}$.
+	When choosing a variant of the coordinate descent, there is a tradeoff between the
+	computational cost of each update, larger for the greedy coordinate selection, and
+	the convergence rate of the coordinate selection, slower for random coordinate
+	selection. For convolutional coordinate descent with very sparse coding signals,
+	the size of the problem is very large and randomized coordinate descent have low
+	chance of selecting coordinates that are relevant compared to greedy coordinate descent.
+	In practice, we observe that a greedy coordinate descent is quicker for these problems
+	with a convergence to sparser solution.
+
+
+	When dealing with sparse problem, only a few coordinates are really important. A line of
+	methods have been developed to take advantage of this fact by screening out coefficients
+	that are supposed to be 0 at the optimal solution. These methods are called screening
+	and are very efficient to improve the computational complexity of coordinate descent methods.
+	The screening idea was introduced in the seminal work of \citet{Ghaoui2012},
+	which proposes \emph{safe-rules} to screen out variables assured to be 0 in the optimal
+	solution. \citet{Tibshirani2012} proposed less safe rules, tagged as \emph{strong-rules}
+	which are more aggressive and might wrongly disregard some coordinates that needs to be
+	recovered in a post-processing step. Recently, \citet{Fercoq2015} proposed another set
+	of rules which screens out more coordinates than the safe-rules but is still assured to
+	only screen out coordinates that are null at the optimum.
+
+% subsubsection cvg_cd (end)
+
+
+\subsubsection{Computing Greedy Updates Efficiently}
+\label{ssub:cd_greedy_update}
+
+	The success of the greedy updates highly depends on the efficiency to compute the
+	coordinate update. For problem \autoref{eq:intro_sc}, \citet{Kavukcuoglu2013}
+	show that if at iteration $q$, the coefficient $(k_0, t_0)$ is updated from
+	$Z_{k_0}[t_0]$ to a value $Z'_{k_0}[t_0]$, by denoting $\Delta Z^{(q)} = Z_{k_0}[t_0] - Z'_{k_0}[t_0]$,
+	$\beta$ is updated with
+	\begin{equation}\label{eq:sota:csc:beta_up}
+		\beta_k^{(q+1)}[t] = \beta_k^{(q)}[t] -
+			\mathcal S_{k, k_0}[t-t_0] \left(Z_{k_0}[t_0] - Z'_{k_0}[t_0]\right),~~~~~\forall (k, t) \neq (k_0, t_0)
+	\end{equation}
+
+	with \mbox{$\mathcal S_{k, l}[t] = (\widetilde{D_k} * D_l)[t]$}~. For all
+	\mbox{$t \notin\llbracket-W+1, W-1\rrbracket$}, $\mathcal S[t]$ is zero. Thus,
+	only $\bO{KW}$ operations are needed to maintain $\beta$ up to
+	date with the current estimate $Z$. Finally, the complexity of an iteration of
+	CD is dominated by the $\bO{KT}$ operations needed to find the maximum of
+	$|\Delta Z_k[t]|$.
+
+	Note that for the updates using proximal gradient descent for one coordinate, it is
+	also possible to maintain the current gradient value with the same complexity. We will
+	denote $\zeta^{(q)} = \nabla h_1(Z^{(q)})~,$ the gradient at iteration $q$. If coordinate
+	$(k_0, t_0)$ is changed	from $Z_{k_0}[t_0]$ to $Z'_{k_0}[t_0]$, $\zeta$ is updated	by
+	\begin{equation}\label{eq:zeta_up}
+		\zeta^{(q + 1)}_k[t] = \zeta^{(q)}_k[t] -
+			\mathcal S_{k, k_0}[t-t_0] \left(Z_{k_0}[t_0] - \zo_{k_0}[t_0]\right),~~~~~\forall (k, t) \in \mathcal C
+	\end{equation}
+	This update rule is very close to the one in \autoref{eq:sota:csc:beta_up} except that all
+	the coordinates are updated this time, even $(k_0, t_0)$. After a coordinate update,
+	the gradient can be maintained using the same number of operation $\bO{KW}$.
+
+
+% subsubsection cd_greedy_update (end)
+
+
+% section csc_algo (end)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\biblio{}
+\end{document}

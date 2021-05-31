@@ -1,0 +1,26 @@
+\documentclass[../thesis.tex]{subfiles}
+\crossref{}
+\begin{document}
+
+
+
+In clinical context, gait assessment is usually performed by visual examination. Extracting the information relevant to the doctors from inertial sensors would change the way patients are followed, as it would improve the comparison of their gait in time and with other patients. In this chapter, we present the gait signals collected with the Cognac-G group and show that convolutional representations -- described in \autoref{chap:csc} -- can be applied to these signals to extract step like patterns and to summarize the signals. Finally, we introduce a novel algorithm to identify steps in gait signal. This algorithm relies on template matching between the signals and a set of chosen steps.
+
+
+
+\section{Context}
+\label{sec:walk:context}
+
+Pathologies affecting posture, balance, and gait control are threatening the autonomy of patients not to mention the risk of fall and therefore require rehabilitation intervention as early as possible. However, it remains difficult to accurately evaluate  the various specific interventions during the rehabilitation process and the optimal content of exercise interventions they should involve.  If only for these reasons, it would be interesting to learn how to monitor sensorimotor behavior at large and locomotion in particular which is a growing area in medical engineering science \citep{mariani, marschollek2008performance, willemsen1990automatic, dijkstra2008detection, han2006gait, Ayachi2016, williamson2000gait}. It requires several steps: first, we wish to investigate how to monitor sensorimotor behaviors for patients in the doctor office and the resulting cognitive load it implies. Second, we want to learn how to construct databases with the quantitative variables recorded in that process, in order to make longitudinal studies of behaving individuals. Third, we would like to merge these individual databases in large data banks to define statistical norms, which is mandatory to detect dysfunctions or pathologies at the earliest stage possible. In that process we encounter at least three main challenges: the need for pervasive or ubiquitous computation to collect data; handling large inter-individual variability in the studied Human motion captures; and aggregating highly heterogeneous data to build the data bank.
+
+
+There exist many software applications on the market that use wearable sensors -- namely accelerometers, gyroscopes, magnetometers and/or GPS -- and are useful for rehabilitations. They calculate the number of steps made in a day \citep{tran2012high, naqvi2012step}, the distance traveled in a day \citep{renaudin2012step, kim2004step}, the average speed or the daily amount of time spent walking, running, sitting, standing, laying \citep{oner2012towards, brajdic2013walk}. Most of the algorithms published in this context are either dedicated to one specific terminal or mobile phone, or they are copyrighted and not freely available for research.
+
+
+This chapter is organized as follows: \autoref{sec:walk:data} describes the gait data used in this chapter. \autoref{sec:walk:csc} presents the application of convolutional dictionary learning to these signals. \autoref{sec:walk:steps} introduces a novel step detection algorithm, discusses the influence of the parameters and compares it to state-of-the-art methods. In \autoref{sec:walk:plos_one}, we briefly summarize a medical study, done with these signals and \autoref{sec:walk:ccl} concludes this chapter.
+
+% section sec:walk:context (end)
+
+
+\biblio{}
+\end{document}

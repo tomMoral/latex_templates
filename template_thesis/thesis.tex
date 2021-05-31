@@ -1,0 +1,166 @@
+\documentclass[
+	a4paper,
+	twoside,	% recto-verso printing
+	openright,  % chapters begin on recto
+	11pt,
+	draft=false,
+	oldfontcommands]{memoir}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%		Add styling files with extra macro
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Declare style in option
+% Available style are {plain, NIPS, ICLR, JMLR, thesis}
+\usepackage[thesis]{shortcut}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%		Subfile management
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% Macro for subfile handeling
+\graphicspath{{./figures/}, {../figures/}}
+\def\TikzLocation{../tikz/}
+\def\BibFile{../library.bib}
+\newcommand\setchap[1]{\setcounter{chapter}{#1}}
+\usepackage{bibentry}
+\nobibliography*
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%		Add styling files with extra macro
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\IfFileExists{Style/margins.tex}{
+	\input{Style/margins}
+	\input{Style/chapters}
+	\input{Style/headings}
+	\input{Style/subappendix}
+}{
+	\input{../Style/margins}
+	\input{../Style/chapters}
+	\input{../Style/headings}
+	\input{../Style/subappendix}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%				Xref in subfiles
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{xr}
+\def\crossref{\externaldocument{/home/tom/.cache/gummi/.thesis.tex}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%					TITLE
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\TITLE{Représentations Convolutives Parcimonieuses --
+		   application aux signaux physiologiques et interprétabilité de l'apprentissage profond}
+\def\TITLEen{Convolutional Sparse Representations --
+			 application to physiological signals and interpretability for Deep Learning}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%		Define some length
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newlength{\parskipabstract}
+\setlength{\parskipabstract}{\parskip}
+
+% No page break if less than 3 line in a paragraph
+\clubpenalties 3 10000 10000 0
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%		Define double page geometry
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newgeometry{top=3.5cm, inner=4cm, outer=2.5cm, bottom=2.5cm}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+\def\biblio{}
+\def\cbiblio{}
+\def\crossref{}
+\renewcommand\setchap[1]{}
+\def\TikzLocation{./tikz/}
+\def\CHANGES{}
+
+
+\newgeometry{top=0.5cm, left=2cm, right=2cm, bottom=1cm}
+\subfile{Misc/front_page}
+\blankpage
+
+\newgeometry{top=3.5cm, inner=4cm, outer=2.5cm, bottom=2.5cm}
+
+% Main TOC
+\setcounter{tocdepth}{1}
+\begin{KeepFromToc}
+\tableofcontents
+\end{KeepFromToc}
+
+
+\subfile{Misc/acknowledgement.tex}
+\blankpage
+\subfile{Misc/abstract.tex}
+\blankpage
+\subfile{Misc/notations.tex}
+\blankpage
+\subfile{0_fr_summary/resume.tex}
+\blankpage
+
+\subfile{1_introduction/chapter1.tex}
+
+\part{Pattern-based Time Series Representation}
+\label{part1}
+
+
+\introPart{}
+\subfile{Misc/intro_part1}
+
+
+\subfile{2_sota_csc/sota_conv_sc}
+
+
+
+% PART II -> Real Life
+\part{Application to physiological signals}
+\label{part3}
+
+\introPart{}
+\subfile{Misc/intro_part3}
+
+
+
+\subfile{Misc/conclusion}
+
+
+\appendix
+\part*{Appendices}
+\addcontentsline{toc}{part}{Appendices}
+
+\subfile{9_walk/article_step_detect}
+
+
+
+% References
+\def\bibsection{
+\chapter*{Bibliography}
+\addcontentsline{toc}{part}{Bibliography}
+\markboth{Bibliography}{Bibliography}}
+\bibliographystyle{\Bibstyle}
+\bibliography{library}
+
+
+% Back page
+\newgeometry{top=0.5cm, left=2cm, right=2cm, bottom=1cm}
+\subfile{Misc/back_page}
+
+\end{document}

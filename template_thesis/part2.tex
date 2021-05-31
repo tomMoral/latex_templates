@@ -1,0 +1,69 @@
+\documentclass[
+	a4paper,
+	twoside,	% recto-verso printing
+	openright,  % chapters begin on recto
+	chapterprefix=false,
+	11pt,
+	headings=big,
+	draft=false,
+	oldfontcommands]{memoir}
+
+
+% Declare style. Available are {plain, NIPS, ICLR, JMLR, thesis}
+\def\STYLE{thesis}
+\def\tkzscl{1}
+\def\figstyle{_large}
+
+\usepackage{shortcut}
+
+
+% Macro for subfile handeling
+\graphicspath{{./figures/}, {../figures/}}
+\def\TikzLocation{../tikz/}
+\def\BibFile{../library.bib}
+
+% Custom styling, compatible with subfiles in subdirs
+\IfFileExists{Style/margins.tex}{
+	\input{Style/margins}
+	\input{Style/chapters}
+	\input{Style/headings}
+	\input{Style/subappendix}
+}{
+	\input{../Style/margins}
+	\input{../Style/chapters}
+	\input{../Style/headings}
+	\input{../Style/subappendix}
+}
+
+% Xref in subfiles
+\usepackage{xr}
+\externaldocument{/home/tom/.cache/gummi/.appendix.tex}
+\def\crossref{\externaldocument{/home/tom/.cache/gummi/.thesis.tex}}
+
+
+\begin{document}
+\def\biblio{}
+\def\cbiblio{}
+\def\crossref{}
+\def\TikzLocation{./tikz/}
+
+
+\setcounter{chapter}{5}
+\newgeometry{top=3.5cm, inner=4cm, outer=2.5cm, bottom=2.5cm}
+
+% PART II -> Link DL to SC
+\part{Analyzing deep networks from a data representation perspective}
+\label{part2}
+
+\subfile{5_sota_nn/sota_neural_nets.tex}
+\subfile{6_lista/chapter4.tex}
+\subfile{7_post-train/chapter5.tex}
+
+
+
+% References
+%\nocite{*}
+\bibliographystyle{\Bibstyle}
+\bibliography{library}
+
+\end{document}

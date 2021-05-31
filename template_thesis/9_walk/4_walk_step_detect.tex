@@ -1,0 +1,19 @@
+\documentclass[../thesis.tex]{subfiles}
+\crossref{}
+\begin{document}
+
+
+
+
+
+
+\section{Robust Step Detection}
+\label{sec:walk:steps}
+
+\CHANGES{
+This section quickly describes an algorithm developed using our signal basis to robustly detect the	steps in humane walk signals. The full study can be found in \autoref{chap:walk:step_detect}.
+
+
+In the context of dynamic equilibrium quantification, it is important to be able to robustly extract the steps from inertial sensor recording of a human walking. In our study, we present a method for step detection from accelerometer signals based on template matching. Due to the constraints from the considered medical application, our algorithm has not been directly developed using the convolutional sparse coding as this method does not robustly detect the steps with various amplitude from our data base. The principle of our step detection algorithm is to recognize the start and  end times of the steps in the signal thanks to a predefined set of templates (library of steps). The algorithm is tested on a database of 1020 recordings, composed of healthy patients and  patients with various neurological or orthopedic troubles. Simulations on more than 40000 steps show that even with a library of only 5 templates, our method achieves remarkable results with a 98\% recall and a 98\% precision.  The method  is robust to parameter changes, adapts well to pathological subjects and can be used in a medical context for robust step estimation and gait characterization.
+}
+\end{document}

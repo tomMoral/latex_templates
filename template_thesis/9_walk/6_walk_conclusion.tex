@@ -1,0 +1,33 @@
+ \documentclass[../thesis.tex]{subfiles}
+\crossref{}
+\begin{document}
+
+
+
+\section{Conclusion}
+\label{sec:walk:ccl}
+
+
+
+\CHANGES{
+In this chapter, we showed that sparse convolutional representation can be used to summarize walk signals. A library of patterns can be used to encode the signal and by optimizing it, it is possible to get information about the step localization. In addition, steps patterns can be learned from a set of signals in an unsupervised setting, capturing the common shape of the patterns in the different exercises for different initialization strategies.
+
+
+Despise these promising initial results, certain questions should be addressed to improve the practicality of this method. The question of the local adaption of the regularization to capture patterns with different amplitude in the signal is critical to enable the usage of such technique on non-segmented signals, with different intensity  due to variation in the speed of the walk or to different phases in the protocol. Another question is the cleaning of the obtained representations. The different patterns shifted, with activation coefficient localized at different time and the grouping of such coefficients would greatly improve the interpretability of the method and its results. Finally, the question of pattern balance is also an open problem. Indeed, some patterns are less frequent than the other, such as the boundaries steps or the steps performed during a turn-about. The capacity to learn such patterns greatly depends on the capacity to learn patterns that are under-represented in the signal.
+
+
+We also described in this chapter a template-based method for step detection. This method, based on a greedy algorithm and a library of annotated step templates, achieves good and robust performances even with a small number of templates. When used on a large database composed of healthy and pathological subjects walking at different speeds, the method obtains  a 98\% recall and 98\% precision. This method shows that it is possible to improve the pattern detection for specific application but the automatization of such process would be of tremendous interest for many applications.
+
+
+}
+
+
+\section*{ACKNOWLEDGMENTs}
+ The authors would like to thank R. Barrois, D. Ricard, A. Yelnik, C. De Waele and T. Gr{\'e}gory for the thorough discussions, the design of the experiment, the data acquisition and clinical annotation. This work was supported by SATT Ile-de-France Innov.
+
+% section time_series (end)
+
+
+
+\biblio{}
+\end{document}

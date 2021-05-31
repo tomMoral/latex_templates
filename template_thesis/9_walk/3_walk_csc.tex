@@ -1,0 +1,194 @@
+\documentclass[../thesis.tex]{subfiles}
+\crossref{}
+\begin{document}
+
+
+\section{Convolutional Representations for Gait Signals}
+\label{sec:walk:csc}
+
+In this section, we use the convolutional representation, described in \autoref{chap:csc}, to test the capacity of the model to extract step patterns. We focus on the vertical acceleration of the right foot. An example of a vertical acceleration signal during walking is given in \autoref{fig:walk:DAZ}. \CHANGES{All the experiments are run using a basis of 100 recordings of healthy subjects and split between a train set of 50 recordings denoted $X_{train}$ and a test set $X_{test}$ with 50 recordings from healthy subjects that are not in the train set.
+
+
+\begin{figure}[tp]
+	\centering
+	\includegraphics[width=\textwidth]{walk/sig_DAZ}
+	\caption{Vertical acceleration of the right foot for an healthy subject walking. The vertical
+	dashed line represent the beginning of the steps, annotated by a medical doctor.}
+	\label{fig:walk:DAZ}
+\end{figure}
+
+\subsection{Encoding a Signal with a Dictionary of Steps}
+\label{sub:walk:encode}
+
+
+To test the encoding capacity of the convolutional sparse coding, we computed the embedding of signals from human walking on a dictionary $\pmb D^{m}$ of steps. To construct this dictionary, we select 25 recordings in $X_{train}$  where the steps are annotated manually by a medical doctor and draw one step uniformly in each of these signals. These patterns are them normalized and zero-padded such that $p$ is the $k$-th pattern in $\mathcal P$, \ie{} the vertical acceleration of the step selected in the $k$-th recording, then
+%
+\[
+	\pmb D^{m}_k[t] = \begin{cases}
+		\frac{p[t]}{\|p\|_2} &~~\forall t \in \llbracket 0, |p|-1\rrbracket\\
+		0 &~~ \forall t \in \llbracket |p|, W-1\rrbracket\\
+				  \end{cases}
+\]
+%
+with $W = \max_{p \in \mathcal P} |p|~$. The blue curves in \autoref{fig:walk:dict_tweak} present these step patterns used in $\pmb D^{m}$. Then, the activation for the signals in $X_{test}$ are computed using SeqDICOD, presented in \autoref{alg:SeqDICOD}, with $M=5$. We fixed the regularization parameter to $\lambda=5$ for this experiment.
+}
+
+
+\begin{figure}[tp]
+	\centering
+	\includegraphics[width=\textwidth]{walk/csc_walk_D1}
+	\caption{(\emph{blue}) Initial steps in $\pmb D^{m}~.$ (\emph{orange}) Patterns in
+			 $\pmb D^{(50)}$ learned with convolutional dictionary learning on a set of $50$
+			 walk exercises with healthy subjects, starting from the steps patterns
+			 $\pmb D^{m}~.$}
+	\label{fig:walk:dict_tweak}
+\end{figure}
+
+	
+\begin{figure}[tp]
+	\centering
+	\includegraphics[width=\textwidth]{walk/csc_walk_z}
+	\caption{Convolutional sparse coding for the right foot vertical acceleration signal with
+			 the dictionary $\pmb D^{m}$ composed of steps randomly selected from different subjects'
+			 exercises. The vertical dashed lines represent the beginning of each step,
+			 annotated by a medical doctor in the original signal.}
+	\label{fig:walk:encode_steps}
+\end{figure}
+
+\autoref{fig:walk:encode_steps} presents the activation signal computed for one signal $X$. Unsurprisingly, the activation coefficients are concentrated around the beginning of the steps. The activated coefficients are not unique for each step, but the steps are a linear combination of multiple patterns, sometimes slightly shifted in time.\CHANGES{The slight shifts in time result from annotation imprecision for the steps patterns. Indeed, from the signal, there is no clear definition of the start of the step in the signal and the uncertainty of this annotation is evaluated to less than 0.2 s (20 samples) for each step. This explains that the coefficients might be spread out around the step boundaries. To be able to use convolutional sparse coding as a step detection algorithm, an extra pattern alignment step would be required. No pattern seems to be dominant to encode the signal as all patterns are activated for some signals. In \autoref{fig:walk:encode_steps}, three steps are not encoded by the method: the steps at the beginning and at the end of the walk and the central step. The first and last steps play a specific role in the recording as they capture the transition between the stand still phase and the walking phase. In our specific protocol, the central step is associated with the about turn of the exercise (\emph{cf} \autoref{fig:walk:exo}). These three steps have specific shapes and amplitudes and are different from other steps. The dictionary $\pmb D^{m}$ being drawn uniformly, it contains steps from the edge and turn-about but as they are more specific, the convolutional sparse coding is not able to summarize the three missed steps using the given step patterns. Another issue is that the amplitudes of these three steps are smaller than the amplitude of other steps. Lower amplitude steps are not captured by the convolutional sparse coding because encoding them does not reduce the reconstruction cost as much as for the other steps. The tradeoff between the reconstruction cost and the sparse regularization is controlled by the regularization parameter $\lambda$ which is fixed for the whole signal $X$. If $\lambda$ is lowered, convolutional sparse coding encodes these specific steps but also add more coefficients for the other steps. This example illustrates an open problem for sparse coding: how can convolutional sparse coding capture local variations in the signals adaptively to the local amplitude. For step detection, we designed a robust algorithm based on the Pearson coefficient to detect steps in recordings of human walking which handle theses problems with the amplitude (see \autoref{sec:walk:steps} and \autoref{chap:walk:step_detect}). This algorithm can be seen as a greedy sparse coding algorithm with an amplitude normalization.
+}
+
+
+\subsection{Updating the Dictionary for a Set of Signals}
+\label{sub:walk:tweak_D}
+
+Then, we use convolutional dictionary learning (CDL) to update the dictionary $\pmb D^{m}$ with $X_{train}$. The signal used for the unsupervised learning of the dictionary $\pmb D^{(50)}$ are thus the 25 recordings from which the original steps in $\pmb D^{m}$ are extracted plus 25 extra recordings. The patterns are updated with $50$ iterations of alternate minimization with SeqDICOD$_5$ for sparse coding steps and accelerated proximal gradient descent (APGD) to update the dictionary elements (see \autoref{sub:du_pgd} and \autoref{alg:du:apgd} for details on APGD).
+
+\begin{figure}[htp]
+\centering
+\includegraphics[width=\textwidth]{walk/cost_train_walk}
+\caption{Evolution of the cost function for the train set relatively of the number of CDL iteration $q$ run. (\emph{dashed}) Cost for dictionary $\pmb D^{m}$. (\emph{blue}) Cost for the CDL starting from $\pmb D^{m}$. (\emph{orange}) Cost for the CDL starting with the SSA initialization. (\emph{green}) Cost for the CDL with 5 random initializations.}
+\label{fig:walk:cost_train_walk}
+\end{figure}
+
+\CHANGES{
+\autoref{fig:walk:cost_train_walk} shows the evolution of the cost function for the train set relatively of the number of convolutional dictionary learning iteration $q$ run. The CDL improves the encoding cost on the train set compared to the initial dictionary of steps $\pmb D^{m}$. This procedure also improves the cost function value on the test set. \autoref{fig:walk:dict_tweak} presents in orange the patterns obtained after the dictionary learning, ordered using the $\ell_1$-norm of the associated coding signals on the test set. Thus, the first pattern is the one which is used the most to encode the test signals. The first observation is that the final patterns are not very different from the original steps and the local structure of the steps is preserved. The original steps are smoothed in their final version as it can be seen with the first pattern where the final oscillations are attenuated and the central part is more regular. Some other local variations are amplified. For instance the vibration at the beginning of the sixteenth learned pattern is stronger than in the original step. Finally, the last pattern is equal to the original ones. This pattern is not updated because it is not used to encode any part of the train sample signals.
+
+
+The patterns learned with CDL improve the signal representation computed with this model. \autoref{fig:walk:encode_tweak} illustrates the coding signal obtained with this new dictionary for the same signal $X$ as in \autoref{fig:walk:encode_steps}. Compared to the codes obtained with $\pmb D^{m}$, the activated coefficients are more concentrated around the steps and fewer coefficients are activated. The signal is summarized in a sparser way using the new dictionary. However, no pattern is adapted by the algorithm to capture the three steps that were missed using $\pmb D^{m}$. This can be explained by the amplitude issue discussed in \autoref{sub:walk:encode}. Indeed, these type of steps are not encoded by the sparse coding step as for the given regularization, the coding coefficients are estimated to be null in these areas. Thus, the dictionary updates cannot adapt the patterns to better capture these local variations and this part of the signal is ignored when updating the dictionary elements. This behavior is linked to the regularization level adaption problem for convolutional sparse coding. The design of an algorithm which could adapt the regularization level to the local amplitude of the signal, up to certain levels, would improve the usage of this technique for time series representation.
+}
+
+\begin{figure}[tp]
+	\centering
+	\includegraphics[width=\textwidth]{walk/csc_walk_z1}
+	\caption{Convolutional sparse coding for the right foot vertical acceleration signal with
+			 a dictionary of steps randomly extracted from other patients exercises.}
+	\label{fig:walk:encode_tweak}
+\end{figure}
+
+% subsection walk:csc:D_steps (end)
+
+\subsection{Learning a Dictionary of Steps from Accelerometer Signals}
+\label{sub:walk:learn_D}
+
+
+\CHANGES{
+In the previous experiments, the structure of the steps is given in the initial dictionary $\pmb D^{m}$. An interesting question is to see if the CDL is able to learn the local structure of the steps without supervision, \ie{} starting from an initial dictionary computed automatically. Here, we will compare two initialization approaches to learn a set of patterns $\pmb D$ with 50 iterations of CDL: the random initialization with a generic dictionary and the initialization with the PCA.
+
+For the random initialization, we draw uniformly generic atoms in the unit sphere of $\Rset^W$. The elements $\pmb D_k^{(0)}$ of the dictionary are generated using a normalized Gaussian distribution, such that
+%
+\begin{equation}
+\label{eq:walk:D_generic}
+	\pmb D^{(0)}_k = \frac{u_k}{\|u_k\|_2}~~~\text{with } u_k \sim \mathcal N_W \left(0, \pmb I_W\right)
+\end{equation}
+%
+The top part of \autoref{fig:walk:dict_generic} presents $5$ examples of generic atoms. These atoms do not have any structure, contrarily to the initial dictionary used in the previous experiment. The CDL alternate minimization is used, starting with this random dictionary, with a set $X_{train}$ of $50$ recordings of healthy patients walking. The final dictionary elements are displayed in the bottom part of \autoref{fig:walk:dict_generic}. Out of the $25$ learned patterns, only six are used to encode the signals in $X_{train}$. The other ones are not updated as they are never activated. The six patterns learned are similar to step patterns from \autoref{fig:walk:dict_tweak}. The general shape of the patterns are very similar. The main differences are located at the end of the steps, when the foot is touching the ground. Also, the patterns are not aligned. The first pattern starts with a small phase delay and is faster compared to the second one. This experiment shows that convolutional dictionary learning is able to learn patterns which capture the local dynamic of a step in an unsupervised setting starting from random initialization.
+
+
+\begin{figure}[tp]
+\centering
+\includegraphics[width=\textwidth, trim={0 48em 0 0}, clip]{walk/csc_walk_Dr}
+\caption{(\emph{top}) Examples of generic dictionary patterns in $\pmb D^{(0)}$, drawn from \autoref{eq:walk:D_generic}. (\emph{bottom}) Top five patterns learn with 50 iterations of CDL. These patterns captures the step local structures.}
+\label{fig:walk:dict_generic}
+\end{figure}
+
+
+For signal encoding, these patterns are also able to summarize the walk in interpretable way. \autoref{fig:walk:encode_learn} displays the encoding of the same walk signal presented in \autoref{fig:walk:DAZ} and encoded in the previous figures with the patterns learned with CDL from generic initialization. The activation coefficients are also concentrated around the beginning of the steps but there is a bit more variations. Indeed, as no annotations were given at the beginning, some patterns such as the 4th and 5th ones  capture a part of either one (the 4th) or two steps (the 5th). These random shifts are selected by the initialization of the dictionaries and the delays between the localization of the components are linked to the delay observed in the learned patterns. A nice way to resolve this would be to design a dictionary updates which tries to compute aligned dictionaries by trying to regroup the activated coefficients at the same time in the activation signal. Indeed, a dictionary and its associated activated coefficient can both be shifted by an inverse lag $\tau$ without changing the value of the reconstruction cost. With this idea, the patterns with a zero part such as the 4th one could be shifted back to learn more interesting part of the signal during the dictionary update.
+
+\begin{figure}[tp]
+	\centering
+	\includegraphics[width=\textwidth]{walk/csc_walk_Zr}
+	\caption{Activation signal for the right foot vertical acceleration signal with a dictionary learned from
+			 a set of $50$ exercises by healthy patient. Each color corresponds to one activation signal.}
+	\label{fig:walk:encode_learn}
+\end{figure}
+
+
+A second experiment makes use of the SSA to initialize the patterns. The idea is to make a PCA on all subseries of length $W = 100$ in the train set. The initial dictionary $D^{(0)}$ is constructed by taking the $K$ first singular vectors (or principal components). The top part of \autoref{fig:walk:dict_ssa} presents $5$ examples of generic atoms. These atoms do not have any structure, in contrary with the initial dictionary used in the previous experiment. The CDL alternate minimization is used, starting with this random dictionary, with a set $X_{train}$ of $50$ recordings of healthy patients walking. The final dictionary elements are displayed in the bottom part of \autoref{fig:walk:dict_ssa}. In this case, the learned patterns can also be linked to step patterns. The same remarks can be made as for the random initialization. Out of the $25$ learn patterns, only 15 are used to encode the signals from $X_{train}$ and $10$ are not updated from their original value. The patterns are not aligned and some of them capture the end of a step and the beginning of another one. \autoref{fig:walk:encode_ssa} presents the encoding of the same signal presented before. The encoding is less concentrated compared to random initialization. Indeed, the patterns are selected to capture the variance in all shifted position to they are not well localized with SSA. But this method is also the only one to be able to capture the last step patterns in the signal. The first and middle patterns are not encoded by any of the learned dictionary we tried.
+
+
+\begin{figure}[tp]
+	\centering
+\includegraphics[width=\textwidth, trim={0 48em 0 0}, clip]{walk/csc_walk_Dssa}
+	\caption{(\emph{top}) Examples of initial patterns in the dictionary $\pmb D^{(0)}$ computed using SSA. (\emph{bottom}) Top five patterns learn with 50 iterations of CDL. These patterns captures the step local structures.}
+	\label{fig:walk:dict_ssa}
+\end{figure}
+
+
+\begin{figure}[tp]
+	\centering
+	\includegraphics[width=\textwidth]{walk/csc_walk_Zssa}
+	\caption{Activation signal for the right foot vertical acceleration signal with
+			 a dictionary learned from a set of $50$ exercises by healthy patient.
+			 (\emph{red}) first pattern, (\emph{orange}) second pattern.}
+	\label{fig:walk:encode_ssa}
+\end{figure}
+
+As the CDL problem is non-convex, the initialization plays a tremendous role in the capacity of the method to compute a good representation of the signals in the basis. To assess the impact of the initialization, we look at the function error for $X_{train}$ and $X_{test}$. \autoref{fig:walk:cost_train_walk} displays the training cost function evolution during the CDL for initialization with the dictionary of manually annotated patterns $\pmb D^{m}$, with the SSA and with 5 random dictionary drawn from \autoref{eq:walk:D_generic}. We can see that the manual initialization gives better results than all the other initialization methods. But with the number of iteration growing, CDL obtains dictionaries which have similar error level as the initial dictionary $\pmb D^{m}$. The dictionary obtained with CDL starting from $\pmb D^{m}$ beats all the other for the other dictionaries. However, the error levels are not very different and random initialization gives results that can be compared to manual initialization. The same observations can be done with the test error, displayed in \autoref{tab:walk:csc_cost_val} and the order of the different methods is preserved. The best test error is obtained for manual initialization with CDL but random and SSA initialization are able to reach levels lower than the initial manual dictionary after few iterations. The SSA initialization does not seem to provide a big advantage compared to the random initialization but it is better than the mean random initialization.
+
+\begin{table}
+\small
+\centering
+\def\arraystretch{1.5}
+\mbox{
+\hskip-1.5em
+\begin{tabular}{ | c | c | c | c | c | c |}
+	\hline
+	Initialization & Manual & Manual & SSA & best random &
+		\multicolumn{1}{m{8em}|}{mean on 5 random initialization}\\\hline
+	\# iteration & 0 & 50 & 50 & 50 & 50\\\hline
+	% Train Error & 0.1882 & 0.1802 & 0.1861 & 0.1832 & 0.1865\\\hline
+	% Test Error & 0.1806 & 0.1777 & 0.1798 & 0.1791 & 0.1800\\\hline
+	Train Error&  0.1882 (0.08) & 0.1802 (0.07) & 0.1832 (0.07) & 0.1820 (0.07) & 0.1837 (0.07)\\\hline
+	Test Error & 0.1806 (0.05) & 0.1777 (0.05) & 0.1791 (0.05) & 0.1786 (0.05) & 0.1792 (0.05)\\\hline
+
+\end{tabular}
+}
+\caption{Value of the cost function for $X_{train}$ and $X_{test}$ for various initialization and number of iterations. The last column is the performance averaged over 5 random iterations. }
+\label{tab:walk:csc_cost_val}
+\end{table}
+
+
+Finally, one parameter which is hard to fix is the regularization parameter. Indeed, this parameter controls the sensitiviy of the method and the quality of the extracted patterns. To see the effect of this parameter, \autoref{fig:walk:csc_lmbd} displays the ratio between the cost function value on $X_{train}$ for dictionaries learned with CDL and the one obtained with a generic dictionary drawn at random relatively to the regularization parameter value $\lambda$. We clearly see on this plot that there is a trade off for this parameter. If it is set too high, a lot of information in the signal is discarded as noise and possibly no patterns are learned. If it is too low, the learned patterns are not be informative as the different set of patterns have the same reconstruction error. Around the optimal $\lambda$, there is little difference between the manual initialization and unsupervised strategies but as $\lambda$ gets lower, the manual strategy seems to lead to a better dictionary.
+
+}
+
+
+
+\begin{figure}[htp]
+\centering
+\includegraphics[width=\textwidth]{walk/csc_walk_lmbd}
+\caption{Ratio between final training cost for a dictionary learned with CDL ; from an initialization (\emph{blue}) manual to $\pmb D^{m}$, (\emph{orange}) with SSA and (\emph{green}) with a generic dictionary; compared to the training cost for a random dictionary as a function of the regularization parameter $\lambda$.}
+\label{fig:walk:csc_lmbd}
+\end{figure}
+
+These preliminary results are very encouraging on the usefulness of convolutional representation method to capture the same information as the step detection in walk signals. Indeed, the activation coefficients indicate the approximate localization of the steps. An extra step of pattern alignment is necessary to get a unique coefficient localized in time. This concentration of the coefficients could be obtained using group sparsity technique which would penalize activated coefficients that are close to be grouped on the same time step.
+
+% subsection walk:csc:learn_D (end)
+
+
+% section walk:csc (end)
+
+
+\biblio{}
+\end{document}

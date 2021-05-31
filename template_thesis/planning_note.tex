@@ -1,0 +1,68 @@
+\documentclass{article}
+
+
+% Declare style. Available are {plain, NIPS, ICLR}
+\def\STYLE{plain}
+
+% Personal includes
+\usepackage{shortcut}
+
+% Macro for subfile handeling
+\graphicspath{{img/}}
+\def\TikzLocation{tikz_figures/}
+\def\BibFile{library.bib}
+
+\def\tkzscl{1}
+\def\figstyle{_large}
+%\setcitestyle{numbers,square}
+
+
+\title{Sparse Coding}
+\author{
+	Thomas Moreau\\
+	CMLA, ENS Cachan, CNRS, Universit\'e Paris-Saclay,\\
+	94235 Cachan, France\\
+	\texttt{thomas.moreau@cmla.ens-cachan.fr}
+}
+
+
+% Stretch the line spacing to get a more compact style
+\renewcommand{\baselinestretch}{.92}
+
+\begin{document}
+\def\biblio{}
+
+\maketitle
+
+
+
+\section{Plan2.0}
+
+\begin{enumerate}
+	\item Introduction $\rightarrow$  background work on Representation Learning (RL)\\
+	Recap of all the RL methods in an array + hand waved explanations
+	\item Convolutional dictionary learning + specialized related work
+	\item Neural Network + specialized related work (lastKernel + FacNet)
+	\item Real life stuff:
+	\begin{itemize}
+	\item Data from Cognac-G -> step detection + oculo + publication from Cognac-G
+	\item {\tt loky} $\rightarrow$ scalability
+\end{itemize}
+\end{enumerate}
+
+\subfile{planning/intro}
+
+\subfile{planning/related_work}
+
+\subfile{planning/lista}
+
+\subfile{planning/convdl}
+
+\subfile{planning/conclusion}
+
+% References
+%\nocite{*}
+\bibliographystyle{\Bibstyle}
+\bibliography{library}
+
+\end{document}
