@@ -1,0 +1,44 @@
+\usepackage{dsfont}
+
+%%Definition des symboles
+\DeclareMathOperator*{\argmin}{\arg\!\min}
+\DeclareMathOperator*{\argmax}{\arg\!\max}
+\def \ones {\textrm{\textbf{1}}}
+\def \id {\mathrm{I}}
+\def \E {\mathbb{E}}
+\def \R {\mathbb{R}}
+\def \P {\mathbb{P}}
+\def \C {\mathbb{C}}
+\def \H {\mathcal{H}} 
+\def \F {\mathcal{F}}
+\def \U {\mathcal{U}}
+\def \D {\mathcal{D}}
+\def \X {\mathcal{X}}
+\def \Y {\mathcal{Y}}
+\font\dsrom=dsrom10 scaled 1200
+
+
+\def\indep{\protect\mathpalette{\protect\independenT}{\perp}} % independent
+\def\independenT#1#2{\mathrel{\rlap{$#1#2$}\mkern2mu{#1#2}}}
+\def\iid{\stackrel{\text{iid}}{\sim}}                         % iid
+\def\abs#1{\left\lvert#1\right\rvert}                         % absolute value
+\def\norm#1{\left\lVert#1\right\rVert}                        % norm
+
+\def\indic#1{\mathds{1} \{ #1  \} }
+\def\inner#1{\left\langle#1\right\rangle}                     % inner product
+\def\ssum{\sum\nolimits}                                      % small sum
+\def\sfrac{\nicefrac}                                         % small frac
+\def\wh#1{\widehat{#1}}                                       % wide hat
+\def\mat#1{\mathbf{#1}}                                       % matrix notation
+
+
+%%Style pour les algos
+\SetKwFor{While}{\textnormal{While}}{}{}%
+\SetKwFor{If}{\textnormal{If}}{}{}%
+\SetKwRepeat{Repeat}{Repeat until}{}{}%
+\AlgoDontDisplayBlockMarkers\SetAlgoNoEnd\SetAlgoNoLine%
+\SetNlSty{textbf}{}{.}
+\SetKwData{Left}{left}\SetKwData{This}{this}\SetKwData{Up}{up}
+\SetKwFunction{Union}{Union}\SetKwFunction{FindCompress}{FindCompress}
+\SetKwInOut{Input}{Input}\SetKwInOut{Output}{Output}
+

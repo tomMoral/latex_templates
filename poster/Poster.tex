@@ -1,0 +1,303 @@
+% Copyright 2015
+% 
+% Authors
+% -------
+%   - Emile Contal			emile.contal@cmla.ens-cachan.fr
+%   - Cedric Malherbes		cedric.malherbes@cmla.ens-cachan.fr
+%   - Thomas Moreau			thomas.moreau@cmla.ens-cachan.fr
+%
+%
+% This file may be distributed and/or modified
+%
+% 1. under the LaTeX Project Public License and/or
+% 2. under the GNU Public License.
+%
+% See the file doc/licenses/LICENSE for more details.
+\pdfminorversion=4
+\documentclass[final,mathserif]{beamer}
+\mode<presentation> {
+  \usetheme{PosterCMLA}
+}
+\usepackage[size=a0,scale=1.4,debug,orientation=portrait]{beamerposter}
+
+\usepackage{amssymb,amsmath,amsthm,complexity,bm}
+\usepackage{tikz,graphicx,subfigure,capt-of,epstopdf,animate,wrapfig,pgfplots}
+\usetikzlibrary{arrows,shapes,topaths,calc,patterns}
+\graphicspath{{../img/}}
+\usepackage[final]{pdfpages}
+\usepackage{microtype,nicefrac}
+\usepackage{algorithm2e}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.8}
+
+\usepackage{shortcuts}
+
+\def\mycite#1{\hfill\textcolor{gray}{#1}}
+
+\newtheorem{prop}{Property}
+
+\setbeamertemplate{itemize item}{\tiny\raise7pt\hbox{\donotcoloroutermaths$\blacktriangleright$}}
+\setbeamersize{text margin left=3cm,text margin right=3cm}
+\newlength\ColSep
+\setlength\ColSep{.5cm}
+\newlength\ColWd
+\setlength\ColWd{0.5\textwidth-0.66666\ColSep}
+\newlength\interCol
+\setlength\interCol{0.5em}
+\newlength\botBlock
+\setlength\botBlock{0.7em}
+\newlength\sepBlock
+\setlength\sepBlock{-1.5em}
+
+\newcommand{\sepblock}{\hskip1ex\vskip\sepBlock}
+
+
+% Title information
+\title{Global Optimization with Active Learning}
+\author{Thomas Moreau\textsuperscript{1}\and Nicolas Vayatis\textsuperscript{1}}
+\institute{\textsuperscript{1}CMLA, ENS Cachan, CNRS, Universit\'e Paris Saclay, 94235 Cachan, France}
+
+% Footline with event and location
+\event{NIPS 2015}
+\location{Montreal, Canada}
+\contact{thomas.moreau@ens-cachan.fr}
+\date{October 2014}
+
+% Set Logo
+\logoLeft{
+	\Logo{logo_cachan}{8em}
+}
+\logoRight{
+	\vskip1em
+	\mbox{\hskip-8em\Logo{logo_cnrs}{8em}}
+	\mbox{\hskip2em\Logo{logo_cmla}{8em}}
+}
+
+\begin{document}
+
+
+\begin{frame}{}
+\vspace{0.5ex}
+
+\begin{block}{Abstract}
+	We introduce a random search algorithm for non-convex optimization.
+	The algorithm is based on the estimation of a confidence set that contains the maximum of the function. The main steps of the estimation procedure are described and numerical experiments are presented to show how the algorithm works practically.\\
+  \vspace{1ex}
+  {\hspace{1em}\bf Keywords}
+  Optimization -- Convolutational Sparse Coding -- Time Series representation
+\vskip\botBlock
+\end{block}
+\sepblock
+
+\begin{block}{1. Motivations and Problem Statement}
+	\begin{columns}[t]
+\begin{column}{.45\linewidth}
+	{\bf Examples of High-dimensional Optimization Problems}
+        \begin{itemize}
+	\item Optimization in Air Traffic Management
+	\item Risk Minimization in Machine Learning
+        \item Optimization of Energy Networks
+        \end{itemize}
+
+\vskip1em	
+
+{\hspace{0.1em}\bf Derivative-free Optimization} \mycite{\cite{cite101}}\\
+        Let $f^{\star}:\X\to\R$ where $\X\subset\R^d$ is a closed set
+
+\begin{itemize}
+\item Estimating $\arg\max_{x \in \X} f^{\star}(x) =  \{x \in \X: \forall x' \in \X, f^{\star}(x') \leq f^{\star}(x) \} \,$
+\item  Sequential queries $(x_1, f^{\star}(x_1)), (x_2, f^{\star}(x_2)), \dots$
+\item Choosing $x_{n+1}$ using the previous observations $\D_n=\{(x_i, f^{\star}(x_i) )\}_{i \leq n}$
+\end{itemize}
+\end{column}
+
+
+\begin{column}{.45\linewidth}
+	{\hspace{0.1em}\bf Main Objectives}\\
+	\begin{itemize}
+	\item Design a non-greedy algorithm for non-convex optimization
+	\item Keep the computational cost low for large dimensions (d $\gg$ 10)
+	\item Confirm the performance empirically
+	\item Provide theoretical guarantees
+	\end{itemize}
+	 
+
+{\hspace{1em}\bf }\\
+{\hspace{1em}\bf }\\
+{\hspace{1em}\bf }\\
+\vspace{1em}
+
+{\hspace{0.1em}\bf Hypothesis and Assumptions}\\
+\begin{itemize}
+\item The unkown function $f^{\star}$ is continuous
+\item The unkown function has no flat parts
+\item The unkown function has reasonable variations
+\end{itemize}
+
+          %Since $h_{0}^{\star}(x)= \indic{x \in \arg\max_{x \in \X}f(x)}$, 
+          
+\end{column}
+	\end{columns}
+\vskip\botBlock
+\end{block}
+
+\sepblock
+
+
+
+
+\ColWd=.47\linewidth
+
+\begin{columns}[T]
+{\hspace{0.34em}}
+    \begin{column}{\ColWd}%\ColWd
+      \begin{block}{2. Controlling the Smoothness}
+	
+	%{\hspace{0.1em}\bf Binary classification for level sets estimation}\\
+	%Given a dataset $\D_n$, we have acces to $n+1$ classification datasets: $\D_n^{j}=\{(x_i, \indic{f(x_i) \geq f(x_{(j)})} \}_{i \leq n}$ where $(j)$ stands for the index of the $j^{\textrm{th}}$ smallest value of $\{ f(x_i)\}_{i \leq n}$. Noting $er_{\D^i_n}=\sum_{i \leq n} \indic{h(x_i) \neq y_i}$, we define a set of candidates for the level $i$,
+	%$$
+	%V(\D^i_n)=\{ h \in \H: er_{\D^i_n}(h)=0\}.
+	%$$
+
+	{\hspace{0.1em}\bf Bounding the variations}\\
+	To enforce near-by locations to have close associated values, we assume that $f^{\star}$ belongs to a carefully chosen set of functions $\F$. We consider the following sets of functions:
+	\begin{itemize}
+	 \item Lipschitzian functions: $ \abs{f(x)-f(x')} \leq k \norm{x-x'}_2$
+	 \item Gaussian RKHS balls: $\abs{f(x)-f(x')} \leq M\left(1-\exp{\left( -\frac{\norm{x-x'}^2_2}{2\sigma^2} \right) }\right)^{1/2}$
+	\end{itemize}
+
+      \begin{figure}[h]
+	\begin{center}$
+	  \begin{array}{rcl}
+	    \includegraphics[width=100mm, height=57mm]{placeholder} & ~~~~~~~~~~~& \includegraphics[width=100mm, height=57mm]{placeholder} ~~~~
+	  \end{array}$
+	\end{center}
+      \caption{Upper and lower bounds for  lipschizian functions (left) and gaussian RKHS (right)} 
+       \end{figure}
+\vskip\botBlock
+\end{block}
+\sepblock 
+      
+
+\begin{block}{3. Concepts of Active Learning}
+	
+{\hspace{0.1em}\bf Active learning for binary classification} \mycite{\cite{cite201}}\\
+Let $h^{\star}\in \H$ and $\H_n=\{h \in \H: \sum_{i=1}^n \indic{h(X_i) \neq h^{\star}(X_i)}=0 \}$
+\begin{itemize}
+  \item $DIS(\H_n)=\{x \in \X: \exists (h,h')\in \H_n^2,~h(x) \neq h'(x) \}$
+  \item $SUP(\H_n)=\{x \in \X: \forall h \in \H_n,~h(x)=1 \}$
+  \item $INF(\H_n)=\{x \in \X: \forall h \in \H_n,~h(x)=0 \}$
+\end{itemize}
+{\hspace{0.5em}}
+{\vspace{-0.5em}}
+{\hspace{1em}}
+\begin{figure}[h]
+\begin{center}$
+\begin{array}{cccccc}
+\includegraphics[page=1, width=80mm]{placeholder}& ~~~~~~~ & \includegraphics[page=2, width=80mm]{placeholder} & ~~~~~~~ & \includegraphics[page=3, width=80mm]{placeholder} 
+\end{array}$
+\end{center}
+\caption{Computation of the disagreement area for linear classifiers} 
+\end{figure}
+\vskip\botBlock
+\end{block}
+\sepblock
+
+
+
+\begin{block}{4. Estimating the Maximum with Active Learning}
+	
+{\hspace{0.1em}\bf Set of candidates} \\
+Given a set of mpoints $\{(X_i, f^{\star}(X_i))\}_{i \leq n}$ and a functional space $\F$, we define the set of functions that are still consistent with the datas:
+$$
+\F_n=\{f \in \F: \forall i \in \{1 \ldots n \},~f(X_i)=f^{\star}(X_i) \}.
+$$
+{\hspace{0.1em}\bf Query procedure} \\
+To keep the consistency of the optimization procedure, we propose a query policy that consists in selecting points uniformely from:
+\begin{center}
+$\textsc{ArgMax}(\F_n)=\{x \in \X:  ~\exists f \in \F_n $~s.t.~$x \in \arg\max_{x \in \X	} f(x)\}.$
+\end{center}
+{\hspace{0.1em}\bf Lipschitzian case} \\
+If $\F = $Lip($k$), we have that
+\\
+$ x \in \textsc{ArgMax}(\F_n) $~i.f.f.~$ \min_{i \leq n} f^{\star}(X_i)+ k \norm{x-X_i}_2 \geq \max_{i \leq n } f^{\star}(X_i).$
+
+
+\vskip\botBlock
+\end{block}
+\end{column}
+\setlength\sepBlock{-.75em}
+
+{\hspace{1.1em}}
+
+
+
+    \begin{column}{\ColWd}
+      \begin{alertblock}{}%Title
+      \end{alertblock}
+      
+      
+      
+      
+      
+      
+  
+      \begin{block}{5. Selective Algorithm}
+	
+          \begin{algorithm}[H]
+          \SetInd{0.5em}{1em}
+          \DontPrintSemicolon
+          \textbf{Input:} $\F$, $\X$, $n$ \\ \textbf{Init:} $t, m \leftarrow 0$, $\F_0 \leftarrow \F$, $X_1,X_2,\ldots \iid \mathcal{U}(\X)$ \;	
+          \While{$t <n$}{
+	    $m \leftarrow m+1$ \\
+	    \If{$X_m \in \textsc{ArgMax}(\F_t) $}{
+	      Request $f^{\star}(X_m)$, $t\leftarrow t+1$ \\
+	      $\F_{t} \leftarrow \{f \in \F_{t-1} : f(X_m)= f^{\star}(X_m)\}$ \;
+	    }{}
+          }
+	\textbf{Output:} Any $ x \in \textsc{ArgMax}(\F_n)$
+        \end{algorithm}
+\vskip\botBlock
+\end{block}
+\sepblock
+
+
+
+
+
+\begin{block}{6. Illustrations}
+\begin{figure}[h]
+\begin{center}$
+\begin{array}{lcr}
+\includegraphics[width=128mm, height=128mm]{placeholder} & ~~~~& \includegraphics[width=128mm, height=128mm]{placeholder} \\
+~ & ~ & ~\\
+\includegraphics[width=128mm, height=128mm]{placeholder} & ~~~~& \includegraphics[width=128mm, height=128mm]{placeholder}
+\end{array}$
+\end{center}
+\caption{Selective Algortihm on four synthetic functions}
+\end{figure}
+
+\vskip\botBlock
+\end{block}
+\sepblock
+
+\begin{block}{7. Open Questions and Discussion}
+\begin{itemize}
+\item Theoretical performance of the algorithm
+\item Comparison with natural competitors
+\item Robustness to noise
+\end{itemize}
+\vskip\botBlock
+\end{block}
+\sepblock
+	
+\begin{block}{References}
+	{\tiny \bibliography{../sample_library}}
+\vskip\botBlock
+\end{block}
+	
+\end{column}
+
+  \end{columns}  
+\end{frame}
+\end{document}

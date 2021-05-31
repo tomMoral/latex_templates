@@ -1,0 +1,190 @@
+% Copyright 2015 by Thomas Moreau
+%
+% This file may be distributed and/or modified
+%
+% 1. under the LaTeX Project Public License and/or
+% 2. under the GNU Public License.
+%
+% See the file doc/licenses/LICENSE for more details.
+\ProvidesPackage{beamerthemePosterCMLA}
+\mode<presentation>
+
+
+\usecolortheme{PosterCMLA}
+\useinnertheme[shadow]{rounded}
+\useoutertheme{infolines}
+
+\setbeamertemplate{navigation symbols}{}
+
+
+% Define a location field
+\def\location{
+	\beamer@location
+}
+\long\def\beamer@location#1{
+	\def\insertlocation{#1}
+}
+\location{}
+
+%Define an event field
+\def\event{
+	\beamer@event
+}
+\long\def\beamer@event#1{
+	\def\insertevent{#1}
+}
+\event{}
+
+%Define an contact field
+\def\contact{
+	\beamer@contact
+}
+\long\def\beamer@contact#1{
+	\def\insertcontact{#1}
+}
+\contact{}
+
+%Define logo left/right
+\newcommand{\Logo}[2]{
+	\includegraphics[height={#2}]{#1}
+}
+\def\logoLeft{
+	\beamer@logoLeft
+}
+\long\def\beamer@logoLeft#1{
+	\def\insertLogoLeft{#1}
+}
+\logoLeft{
+	\Logo{logo_cachan}{8em}
+}
+\def\logoRight{
+	\beamer@logoRight
+}
+\long\def\beamer@logoRight#1{
+	\def\insertLogoRight{#1}
+}
+\logoRight{
+	\mbox{\hskip-10em\Logo{logo_cnrs}{8em}}
+	\mbox{\hskip2em\Logo{logo_cmla}{8em}}
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\setbeamertemplate{block begin}{
+	\vskip1ex
+	\begin{beamercolorbox}[center, leftskip=-1em, colsep*=.75ex]{block title}
+  		\usebeamerfont*{block title}{\phantom{Gg}\insertblocktitle}
+  	\end{beamercolorbox}
+  	{\ifbeamercolorempty[bg]{block body}{}{\nointerlineskip\vskip-0.5pt}}
+  	\usebeamerfont{block body}
+ 	\begin{beamercolorbox}[leftskip=0em,colsep*=.75ex,sep=0.5ex,vmode]{block body}
+    \ifbeamercolorempty[bg]{block body}{\vskip-.25ex}{\vskip-.75ex}\vbox{}
+}
+\setbeamertemplate{block end}{
+	\end{beamercolorbox}
+}
+
+\setbeamertemplate{block alerted begin}{
+  %\vskip4ex
+	\begin{beamercolorbox}[center]{block alerted title}
+	    \usebeamerfont*{alerted text}{\insertblocktitle}
+	\end{beamercolorbox}
+}
+\setbeamertemplate{block alerted end}{
+	%\vskip2ex
+}
+
+\setbeamertemplate{block example begin}{
+	\vskip1ex
+	\begin{beamercolorbox}[center,leftskip=-1em,colsep*=.75ex]{block example title}
+    	\usebeamerfont*{block title}{\phantom{Gg}\insertblocktitle}
+	\end{beamercolorbox}
+	{\ifbeamercolorempty[bg]{block example body}{}{\nointerlineskip\vskip-0.5pt}}
+	\usebeamerfont{block body}
+	\begin{beamercolorbox}[leftskip=0em,colsep*=.75ex,sep=0.5ex,vmode]{block example body}
+		\ifbeamercolorempty[bg]{block body}{\vskip-.25ex}{\vskip-.75ex}\vbox{}
+}
+\setbeamertemplate{block example end}{
+	\end{beamercolorbox}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\setbeamertemplate{headline}{  
+	\leavevmode
+	\begin{beamercolorbox}[wd=\paperwidth]{headline}
+		\begin{columns}[T]
+			\column{.03\paperwidth}
+			\column{.12\paperwidth}
+				\vskip2em
+				\insertLogoLeft
+			\column{.7\paperwidth}
+				\vskip4ex
+				\begin{center}
+					{\usebeamercolor[fg]{title}\usebeamerfont{title}{\inserttitle\\[1ex]}}
+					{\usebeamercolor[fg]{author}\usebeamerfont{author}{\insertauthor\\[1ex]}}
+					{\usebeamercolor[fg]{institute}\usebeamerfont{institute}{\insertinstitute\\[1ex]}}
+				\end{center}
+			\column{.12\paperwidth}
+				\vskip2em
+				\insertLogoRight
+			\column{.03\paperwidth}
+		\end{columns}
+    	\vskip2ex
+	\end{beamercolorbox}
+
+	\begin{beamercolorbox}[wd=\paperwidth]{separation line}
+		\rule{0pt}{3pt}
+	\end{beamercolorbox}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\setbeamertemplate{footline}{
+	\vskip2ex
+	\begin{beamercolorbox}[wd=\paperwidth]{separation line}
+		\rule{0pt}{3pt}
+	\end{beamercolorbox}  
+	\leavevmode%
+	\begin{beamercolorbox}[ht=1.2em,leftskip=1em,rightskip=1em]{footline}%
+		\insertevent 
+		\hfill
+		\insertlocation 
+		\hfill
+		\insertcontact  
+		\vspace{.1em}
+	\end{beamercolorbox}
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Setup reference style
+\setbeamertemplate{bibliography item}{\insertbiblabel}
+\setbeamertemplate{bibliography entry title}{}
+\setbeamertemplate{bibliography entry location}{}
+\setbeamertemplate{bibliography entry note}{}
+
+\bibliographystyle{abbrv}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Create control variables
+\setbeamersize{text margin left=3cm,text margin right=3cm}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Display a grid to help align images ... and it looks nice with this color scheme
+%\beamertemplategridbackground[1cm]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\mode<all>
+
+% adapt height of imtemize rectangles
+\setbeamertemplate{itemize items}[triangle]
+\setbeamertemplate{itemize item}{\raisebox{0.12ex}{$\blacktriangleright$}\hskip0.1em}
+\setbeamertemplate{itemize subitem}{\raisebox{0.12ex}{$\triangleright$}\hskip0.1em}
+% or define your own template using \defbeamertemplate{itemize item}, see beameruserguide.pdf
+
+% equal font sizes for all levels
+\setbeamerfont{itemize/enumerate body}{size=\normalsize}
+\setbeamerfont{itemize/enumerate subbody}{size=\normalsize}
+\setbeamerfont{itemize/enumerate subsubbody}{size=\normalsize}
+

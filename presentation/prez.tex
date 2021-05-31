@@ -1,0 +1,119 @@
+%%---------------------------------------------------------------------
+% 
+% Infos
+%   Last Modif: 14/10/15
+%   Authors: Thomas Moreau,
+%
+%%---------------------------------------------------------------------
+
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND THEMES
+%----------------------------------------------------------------------------------------
+\documentclass{beamer}
+\mode<presentation> {
+\usetheme{PrezCMLA}
+\usecolortheme{PrezCMLA}
+\setbeamertemplate{navigation symbols}{} % Remove the navigation symbols
+}
+
+\usepackage{graphicx}
+\graphicspath{{../img/}}
+\usepackage[utf8]{inputenc}
+\usepackage[frenchb]{babel}
+
+\setbeamertemplate{bibliography item}{}
+\setbeamertemplate{bibliography entry title}{}
+\setbeamertemplate{bibliography entry location}{}
+\setbeamertemplate{bibliography entry note}{}
+\bibliographystyle{apalike}
+
+
+\def\mycite#1{\hfill\textcolor{gray}{\cite{#1}}}
+
+
+% This is only here to get pla highlighting
+\AtBeginSection[]
+{
+ \begin{frame}<beamer>
+ \frametitle{Plan}
+ \tableofcontents[currentsection]
+ \end{frame}
+}
+
+%----------------------------------------------------------------------------------------
+%	PRESENTATION INFO
+%----------------------------------------------------------------------------------------
+
+\title[short_title]{Long and detailed title}
+
+% Presentation info
+\author{John Doe} % Your name
+\institute[CMLA]{ENS Cachan - CMLA} 
+\date{15/10/15} % Date, can be changed to a custom date
+
+% Custom footline
+\event{MLMDA Seminar group}
+\location{Cachan, FRANCE}
+
+
+% Add collaborators
+%\collaborators{J. Doe}
+% ou
+%\collaborators[collab]{J. Doe}
+
+% Add supervisor
+\collaborators[supervised]{J. Doe, J. Smith}
+
+% Title for a single frame
+% The box around the title can be adapted with the \SizeTitleBox option
+\setbeamertemplate{title page}[frame]
+\setlength\SizeTitleBox{.8\textwidth}
+
+% Title in a header for the first slide
+%\setbeamertemplate{title page}[header]
+
+%----------------------------------------------------------------------------------------
+% PRESENTATION
+%----------------------------------------------------------------------------------------
+
+
+\begin{document} 
+
+\begin{frame}[t]
+\titlepage 
+\end{frame}
+
+\begin{frame}{Sample frame}
+Itemize: 
+\begin{itemize}\itemsep.5em\itemindent1em
+	\item The items look like that
+	\item \dots
+\end{itemize}
+
+\vskip2em
+% Block item
+\begin{block}{Bayes rule}
+And the blocks like this:.
+\begin{equation}\label{eq:sparse_code}
+	p(x|y) = \frac{p(y|x) p(x)}{p(y)},
+\end{equation}
+\end{block}
+
+\vskip2em
+% Citations
+And the citation of this awesome work \mycite{Cite101}
+\end{frame}
+
+
+%--------------------------------------------------------------------------
+% REFERENCES
+%--------------------------------------------------------------------------
+
+\begin{frame}{References}
+	\nocite{*}
+	\bibliography{../sample_library}
+\end{frame}
+
+
+\end{document} 

@@ -1,0 +1,166 @@
+% Copyright 2015 by Thomas Moreau
+%
+% This file may be distributed and/or modified
+%
+% 1. under the LaTeX Project Public License and/or
+% 2. under the GNU Public License.
+%
+% See the file doc/licenses/LICENSE for more details.
+
+\ProvidesPackage{PrezCMLA}
+\mode<presentation>
+
+\newif\ifbeamer@secheader
+\beamer@secheaderfalse
+
+\DeclareOptionBeamer{secheader}{\beamer@secheadertrue}
+\ProcessOptionsBeamer
+
+\usecolortheme{PrezCMLA}
+\useinnertheme[shadow]{rounded}
+\useoutertheme{infolines}
+
+\ifbeamer@secheader\else\setbeamertemplate{headline}[default]\fi
+
+%-----------------------------------------------------------------------------
+%  Variables declaration
+%-----------------------------------------------------------------------------
+
+% Define a location field
+\def\location{\beamer@location}
+\long\def\beamer@location#1{%
+  \def\insertlocation{#1}%
+  }
+\location{}
+
+%Define an event field
+\def\event{\beamer@event}
+\long\def\beamer@event#1{%
+  \def\insertevent{#1}%
+  }
+\event{}
+
+%Define a Collaborator field
+
+\usepackage{xstring}
+\def\collaborators{\@dblarg\beamer@collaborators}
+\long\def\beamer@collaborators[#1]#2{%
+  \def\insertcollaborators{#2}%
+  \def\jointwork{
+    \ifx&#2&%
+      \vskip1em
+    \else
+      {\small\IfEqCase{#1}{%
+          {supervised}{Work supervised by: #2}%
+          {collab}{Work in collaboration with : #2}
+          }[Joint work with : #2]
+      }
+    \fi
+  }
+  }
+\collaborators{}
+
+\newlength\SizeLogoPage
+\newlength\SizeLogoHead
+\newlength\SizeTitleBox
+\setlength\SizeLogoPage{2.5em}
+\setlength\SizeLogoHead{1.8em}
+\setlength\SizeTitleBox{.8\textwidth}
+
+
+
+\defbeamertemplate{title page}{header}{  
+  \leavevmode
+  \vskip-7.5ex
+  \begin{beamercolorbox}[wd=\paperwidth]{headline}
+  \centering
+    \begin{columns}[T]
+      \column{.03\paperwidth}
+      \column{.12\paperwidth}
+        \begin{center}
+            \vskip-.5em
+           \includegraphics[height=1.8em]{logo_cognac}\\[.4em]
+           \mbox{\hskip.4em\includegraphics[height=1.5em]{logo_cachan.pdf}}
+        \end{center}
+      \column{.73\paperwidth}
+        \begin{center}
+          \hskip2em\usebeamercolor{title}{\color{fg}\large\textbf{{\inserttitle}}\\[1.5ex]}
+          \usebeamercolor{author}{\color{fg}\scriptsize{\insertauthor}}
+          \usebeamercolor{institute}{  \color{fg}\scriptsize{\insertinstitute}\\[2ex]}      
+        \end{center}
+      \column{.12\paperwidth}
+        \vskip.7ex
+        \begin{center}
+          \mbox{\hskip.5em\includegraphics[height=1.8em]{logo_cmla.pdf}}\\
+          \mbox{\hskip-3em\includegraphics[height=1.8em]{logo_cnrs}}
+          \mbox{\includegraphics[height=1.8em, trim={0 1cm 1cm 1cm}, clip]{logo_UP13.png}}
+        \end{center}
+    \end{columns}
+  \end{beamercolorbox}
+
+  % Separation line
+  \begin{beamercolorbox}[wd=\paperwidth]{separation line}\rule{0pt}{2pt}\end{beamercolorbox}\vfill
+}
+
+\defbeamertemplate{title page}{frame}{
+  \vskip.1\textheight
+  \begin{beamercolorbox}[sep=2pt,center, wd=\textwidth]{separationline}
+    %Title box
+    \begin{beamercolorbox}[center, wd=\SizeTitleBox]{headline}
+      \begin{center}
+          \centering
+          \usebeamercolor{title}{\color{fg}\Large\textbf{{\inserttitle}}\hskip2em\\[1.5ex]}
+          \usebeamercolor{author}{\color{fg}\small{\insertauthor}}
+          \usebeamercolor{institute}{  \color{fg}\small{\insertinstitute}\\} 
+      \end{center}
+     \end{beamercolorbox}
+    \vskip-1em
+    \hskip0em
+    % Separation line
+    \begin{beamercolorbox}[center, wd=\SizeTitleBox]{separation line}\rule{0pt}{2pt}\end{beamercolorbox}\vfill
+  \end{beamercolorbox}
+  % LOGO and join work part of the title frame
+  \begin{center}
+      \vskip1em
+      \jointwork
+      \vskip2em
+      \includegraphics[height=\SizeLogoPage]{logo_cognac}
+      \hskip5em
+      \includegraphics[height=\SizeLogoPage]{logo_cmla.pdf}
+      \hskip5em
+      \includegraphics[height=\SizeLogoPage]{logo_cnrs}\\[.5em]
+      \includegraphics[height=\SizeLogoPage]{logo_cachan.pdf}
+      \hskip1em
+      \includegraphics[height=\SizeLogoPage, trim={0 1cm 1cm 1cm}, clip]{logo_UP13.png}
+  \end{center}
+}
+
+\setbeamertemplate{frametitle}{
+  \begin{beamercolorbox}[left, leftskip=1ex,colsep*=.5em,wd=\paperwidth]{block title}
+	\usebeamerfont*{frametitle}{\phantom{Gg}\hskip-3ex\insertframetitle}
+  \end{beamercolorbox}
+  \vskip-1em
+  \begin{beamercolorbox}[wd=\paperwidth]{separation line}
+    \rule{0pt}{1pt}
+  \end{beamercolorbox}
+}
+
+\setbeamertemplate{footline}{
+  \vskip2ex
+  \begin{beamercolorbox}[wd=\paperwidth]{separation line}
+    \rule{0pt}{1pt}
+  \end{beamercolorbox}  
+  \leavevmode%
+  \begin{beamercolorbox}[ht=1.2em,leftskip=1em,rightskip=1em]{footline}%
+    \insertevent
+    \hfill \insertlocation  
+    \vspace{.1em}
+  \end{beamercolorbox}
+}
+
+
+\setbeamertemplate{itemize items}[triangle]
+\setbeamertemplate{itemize item}{\raisebox{0.12ex}{$\blacktriangleright$}\hskip0.1em}
+
+\mode
+<all>
